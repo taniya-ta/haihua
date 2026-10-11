@@ -316,6 +316,12 @@
 </head>
 <body>
 
+<!-- ==================== 测试版醒目横幅（顶部常驻） ==================== -->
+<div style="background:linear-gradient(135deg,#FFD93B,#FFB800);color:#5c3d00;text-align:center;padding:9px 12px;font-size:12.5px;font-weight:700;line-height:1.5;box-shadow:0 2px 8px rgba(255,184,0,.35);position:sticky;top:0;z-index:30;">
+  🚧 测试版 · 请勿当真 🚧<br>
+  <span style="font-weight:600;font-size:11.5px;">房源未核验 · 别填隐私 · 数据可能丢失</span>
+</div>
+
 <!-- ==================== 顶部 ==================== -->
 <div class="topbar">
   <h1>🏝️ 海花岛2号岛 · 社区信息板</h1>
@@ -337,6 +343,12 @@
 <!-- ==================== 列表 ==================== -->
 <div class="list" id="list"></div>
 
+<!-- ==================== 测试版提示（只在页面底部展示一次） ==================== -->
+<div style="padding:14px 16px 90px;text-align:center;font-size:11.5px;color:#9aa3ad;line-height:1.7;">
+  ⚠️ 这是一个<b>练习用测试版</b>，不核验房源真伪，请自行沟通确认。<br>
+  请不要填写身份证、银行卡等敏感信息，数据可能丢失。
+</div>
+
 <!-- ==================== 底部导航 ==================== -->
 <div class="tabbar">
   <div onclick="openPicker()"><span class="ico">➕</span>发布</div>
@@ -352,7 +364,8 @@
     </div>
     <div id="mineList" style="padding:0 0 10px;"></div>
     <div class="hint" style="padding:0 16px 16px;">
-      ℹ️ 这里显示的是<b>你本机发布过</b>的内容（数据存在你的浏览器里）。点任意一条可以查看或删除。
+      ℹ️ 这里显示<b>你本机发布过</b>的内容。点任意一条可查看或删除。<br>
+      <span style="color:var(--red);">⚠️ 测试版：数据存在云端，删除密码仅防误删，请不要放重要信息。</span>
     </div>
   </div>
 </div>
@@ -1017,6 +1030,8 @@ function openDetail(id){
 
 /* =========================================================
    删除（本机管理 + 管理员密码）
+   ⚠️ 测试版说明：这是练习用的测试版，删除密码写在网页里，
+      懂技术的人可以看到。别放重要信息，数据可能被清空。
    ========================================================= */
 const ADMIN_PASS = "621222";   // ← 你的管理员密码，想改就改这里
 
@@ -1029,22 +1044,25 @@ function deletePost(id){
   const isMine = post.ownerUid && post.ownerUid === myUid;
 
   if(isMine){
-    doDelete(id);
+    doDelete(id, true);
     return;
   }
 
   // 不是本机发布的 → 需要管理员密码
-  const pass = prompt("请输入管理员密码：");
+  const pass = prompt("请输入管理员密码：\n（这是测试版，密码仅用于防误删）");
   if(pass === null) return;               // 用户取消
   if(pass !== ADMIN_PASS){
     toast("密码错误，无法删除");
     return;
   }
-  doDelete(id);
+  doDelete(id, false);
 }
 
-function doDelete(id){
-  if(!confirm("确定要删除这条信息吗？删除后无法恢复。")) return;
+function doDelete(id, isMine){
+  const tip = isMine
+    ? "确定删除你发布的这条信息吗？\n\n⚠️ 测试版提示：删除后无法恢复，且数据保存在云端，操作即时生效。"
+    : "确定删除这条信息吗？（管理员操作）\n\n⚠️ 测试版提示：删除后无法恢复，且数据保存在云端，操作即时生效。";
+  if(!confirm(tip)) return;
   const posts = loadPosts().filter(x => x.id !== id);
   savePosts(posts);
   closeSheet("detailSheet");
