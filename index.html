@@ -663,82 +663,97 @@ const REPORT_REASONS_GOODS = [
 const REPORT_THRESHOLD = 3;
 
 /* =========================================================
-   数据读写
+   ☁️ 云端配置（JSONBin）
    ========================================================= */
-const KEY_POSTS = "hhd_posts";
-const KEY_BLOCKED = "hhd_blocked";
+const CLOUD = {
+  binId: "6acb084cffd5d160536084ac",
+  key:   "$2a$10$i0qHI9NqSUkgsmNA998IwuTJXOcy85xOjp3uF2vfQDEB4kGzwDiqS",
+  // JSONBin 的 v3 API
+  url:  "https://api.jsonbin.io/v3/b/6acb084cffd5d160536084ac",
+  // 所有数据都存这一个 bin，结构：{ posts: [...], blocked: [...] }
+};
 
-function loadPosts(){
-  const raw = localStorage.getItem(KEY_POSTS);
-  if(!raw){
-    // 兼容旧数据
-    const old = localStorage.getItem("hhd_houses");
-    if(old){
-      const arr = JSON.parse(old).map(x => ({...x, kind:"house"}));
-      localStorage.setItem(KEY_POSTS, JSON.stringify(arr));
-      return arr;
-    }
-    return [];
+/* 内存缓存（避免频繁请求云端） */
+let CACHE = { posts: [], blocked: [] };
+
+/* 从云端读取全部数据 */
+async function cloudLoad(){
+  try{
+    const res = await fetch(CLOUD.url + "/latest", {
+      headers: { "X-Master-Key": CLOUD.key }
+    });
+    if(!res.ok) throw new Error("读取失败 " + res.status);
+    const json = await res.json();
+    const record = json.record || {};
+    CACHE.posts   = Array.isArray(record.posts)   ? record.posts   : [];
+    CACHE.blocked = Array.isArray(record.blocked) ? record.blocked : [];
+    return true;
+  }catch(e){
+    console.error("cloudLoad error:", e);
+    return false;
   }
-  return JSON.parse(raw);
 }
-function savePosts(arr){ localStorage.setItem(KEY_POSTS, JSON.stringify(arr)); }
-function loadBlocked(){
-  const raw = localStorage.getItem(KEY_BLOCKED);
-  return raw ? JSON.parse(raw) : [];
+
+/* 把内存数据写回云端 */
+async function cloudSave(){
+  try{
+    const res = await fetch(CLOUD.url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": CLOUD.key
+      },
+      body: JSON.stringify({
+        posts: CACHE.posts,
+        blocked: CACHE.blocked
+      })
+    });
+    if(!res.ok) throw new Error("写入失败 " + res.status);
+    return true;
+  }catch(e){
+    console.error("cloudSave error:", e);
+    return false;
+  }
 }
-function isBlocked(phone){ return loadBlocked().includes(phone); }
 
 /* =========================================================
-   示例数据
+   数据读写（统一走云端缓存，兼容原有调用）
    ========================================================= */
-function initDemoData(){
-  if(localStorage.getItem(KEY_POSTS)) return;
-  const now = Date.now();
-  const demo = [
-    {
-      id: now + 1, kind:"house",
-      area:"白沙湾", building:"56栋", room:"2室1厅",
-      size:"80", price:"1000", type:"平层", term:"半年/年租均可",
-      phone:"13800001111",
-      desc:"南向、低层、带电梯，家电齐全，含物业费，水电民用价。适合过冬长住。",
-      time: now - 3600000*5, reports: [], reported:false
-    },
-    {
-      id: now + 2, kind:"house",
-      area:"松涛湾", building:"228栋", room:"2室1厅",
-      size:"75", price:"950", type:"平层", term:"年租",
-      phone:"13900002222",
-      desc:"东南向高层，客厅带阳台，采光好，近超市，拎包入住。",
-      time: now - 3600000*20, reports: [], reported:false
-    },
-    {
-      id: now + 3, kind:"want",
-      area:"白沙湾", building:"56栋附近", room:"2室1厅",
-      size:"", price:"1000", type:"要平层", term:"过冬半年",
-      phone:"13700003333",
-      desc:"老两口过冬，想找南向、带电梯的两室一厅，希望11月入住，租到明年4月。",
-      time: now - 3600000*8, reports: [], reported:false
-    },
-    {
-      id: now + 4, kind:"goods",
-      area:"白沙湾", building:"56栋",
-      title:"九成新电动车", price:"800", cond:"9成新",
-      phone:"13600004444",
-      desc:"过冬买的代步电动车，骑了两个月，车况好，带充电器。走的时候便宜转。",
-      time: now - 3600000*3, reports: [], reported:false
-    },
-    {
-      id: now + 5, kind:"goods",
-      area:"晓港湾", building:"168栋",
-      title:"全新电饭煲 + 炒锅", price:"120", cond:"全新",
-      phone:"13500005555",
-      desc:"买重复了，全新未拆封，电饭煲3L，炒锅28cm。打包一起出。",
-      time: now - 3600000*11, reports: [], reported:false
-    }
-  ];
-  savePosts(demo);
+function loadPosts(){ return CACHE.posts; }
+function savePosts(arr){ CACHE.posts = arr; cloudSave(); }
+function loadBlocked(){ return CACHE.blocked; }
+function saveBlocked(arr){ CACHE.blocked = arr; cloudSave(); }
+function isBlocked(phone){ return CACHE.blocked.includes(phone); }
+
+/* 旧的本地读写（保留兼容，不再使用） */
+const KEY_POSTS = "hhd_posts";
+const KEY_BLOCKED = "hhd_blocked";
+function loadPostsLocal(){
+  const raw = localStorage.getItem(KEY_POSTS);
+  return raw ? JSON.parse(raw) : [];
 }
+
+/* =========================================================
+   示例数据（云端版：不再自动塞数据，避免污染共享数据）
+   ========================================================= */
+// 如果你想把示例数据灌进云端一次，可在控制台执行：seedDemo()
+function seedDemo(){
+  const now = Date.now();
+  CACHE.posts = [
+    { id: now+1, kind:"house", area:"白沙湾", building:"56栋", room:"2室1厅",
+      size:"80", price:"1000", type:"平层", term:"半年/年租均可", phone:"13800001111",
+      desc:"南向、低层、带电梯，家电齐全，含物业费，水电民用价。适合过冬长住。",
+      time: now-3600000*5, reports:[], reported:false },
+    { id: now+2, kind:"goods", area:"晓港湾", building:"168栋",
+      title:"全新电饭煲 + 炒锅", price:"120", cond:"全新", phone:"13500005555",
+      desc:"买重复了，全新未拆封，电饭煲3L，炒锅28cm。打包一起出。",
+      time: now-3600000*11, reports:[], reported:false }
+  ];
+  cloudSave();
+  renderList();
+  console.log("示例数据已写入云端");
+}
+
 
 /* =========================================================
    状态
@@ -1103,7 +1118,7 @@ function submitPost(){
   let myUid = localStorage.getItem("hhd_uid");
   if(!myUid){ myUid = "u" + Math.random().toString(36).slice(2,9); localStorage.setItem("hhd_uid", myUid); }
 
-  const posts = loadPosts();
+  const posts = loadPosts().slice();
 
   if(publishKind === "house"){
     const price = document.getElementById("fPrice").value.trim();
@@ -1195,13 +1210,14 @@ function submitReport(){
   let uid = localStorage.getItem("hhd_uid");
   if(!uid){ uid = "u" + Math.random().toString(36).slice(2,9); localStorage.setItem("hhd_uid", uid); }
 
+  if(!p.reports) p.reports = [];
   if(p.reports.includes(uid)){ toast("你已经举报过这条了"); closeSheet("reportSheet"); return; }
   p.reports.push(uid);
 
   if(p.reports.length >= REPORT_THRESHOLD){
     p.reported = true;
     const blocked = loadBlocked();
-    if(!blocked.includes(p.phone)){ blocked.push(p.phone); localStorage.setItem(KEY_BLOCKED, JSON.stringify(blocked)); }
+    if(!blocked.includes(p.phone)){ blocked.push(p.phone); saveBlocked(blocked); }
     savePosts(posts);
     closeSheet("reportSheet");
     renderList();
@@ -1266,12 +1282,29 @@ function enterSite(){
 }
 
 /* =========================================================
-   启动
+   启动（异步：先从云端拉数据，再渲染）
    ========================================================= */
-initDemoData();
-renderFilters();
-renderList();
-initGate();
+async function boot(){
+  // 先渲染骨架（空列表 + 加载提示）
+  document.getElementById("list").innerHTML =
+    `<div class="empty" style="padding:40px 20px;">☁️ 正在从云端加载…</div>`;
+
+  const ok = await cloudLoad();
+
+  renderFilters();
+  if(!ok){
+    document.getElementById("list").innerHTML =
+      `<div class="empty" style="padding:40px 20px;">
+        ⚠️ 云端加载失败<br>
+        <span style="font-size:12px;">请检查网络后刷新页面重试</span>
+      </div>`;
+  }else{
+    renderList();
+  }
+  initGate();
+}
+
+boot();
 </script>
 </body>
 </html>
