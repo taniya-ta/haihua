@@ -339,9 +339,22 @@
 
 <!-- ==================== 底部导航 ==================== -->
 <div class="tabbar">
-  <div class="active" id="tabList" onclick="switchTab('list')"><span class="ico">🏠</span>找房</div>
   <div onclick="openPicker()"><span class="ico">➕</span>发布</div>
-  <div onclick="switchTab('mine')"><span class="ico">👤</span>我的</div>
+  <div id="tabMine" onclick="openMine()"><span class="ico">👤</span>我的</div>
+</div>
+
+<!-- ==================== 我的（我发布的）弹层 ==================== -->
+<div class="sheet" id="mineSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <h2>我发布的</h2>
+      <button class="close" onclick="closeSheet('mineSheet')">×</button>
+    </div>
+    <div id="mineList" style="padding:0 0 10px;"></div>
+    <div class="hint" style="padding:0 16px 16px;">
+      ℹ️ 这里显示的是<b>你本机发布过</b>的内容（数据存在你的浏览器里）。点任意一条可以查看或删除。
+    </div>
+  </div>
 </div>
 
 <!-- ==================== 选择发布类型弹层 ==================== -->
@@ -752,7 +765,51 @@ function setMode(m){
   renderList();
 }
 function switchTab(tab){
-  if(tab === "mine"){ toast("「我的」页：以后可以放 我的发布 / 我的举报"); }
+  if(tab === "mine"){ openMine(); }
+}
+
+/* =========================================================
+   我的 · 我发布的
+   ========================================================= */
+function openMine(){
+  const myUid = localStorage.getItem("hhd_uid");
+  const all = loadPosts();
+  // 本机发布的（含示例数据也算：示例数据没有 ownerUid，一并显示以便清理）
+  const mine = all
+    .filter(p => !p.ownerUid || p.ownerUid === myUid)
+    .sort((a,b) => b.time - a.time);
+
+  const box = document.getElementById("mineList");
+  if(mine.length === 0){
+    box.innerHTML = `<div class="empty" style="padding:40px 20px;">
+      <div class="big">📭</div>你还没有发布过内容<br>点底部「➕ 发布」发一条试试
+    </div>`;
+  }else{
+    const kindName  = { house:"房源", want:"求租", goods:"二手" };
+    const kindColor = { house:"var(--brand)", want:"var(--want)", goods:"var(--goods)" };
+    box.innerHTML = mine.map(h => {
+      const k = h.kind || "house";
+      const title = k==="goods" ? (h.title||"二手物品")
+                  : (k==="want" ? ("求租 · "+h.room) : ("房源 · "+h.room));
+      const priceTxt = h.price ? (h.price + (k==="want" ? " 元/月预算" : (k==="goods" ? " 元" : " 元/月"))) : "面议";
+      return `
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);">
+        <span style="font-size:10.5px;color:#fff;background:${kindColor[k]||'var(--brand)'};padding:3px 8px;border-radius:6px;flex-shrink:0;">${kindName[k]||'房源'}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
+          <div style="font-size:11.5px;color:var(--sub);margin-top:2px;">${h.area||''}组团${h.building?' · '+h.building:''} · ${priceTxt}</div>
+        </div>
+        <button class="btn ghost" style="padding:6px 12px;font-size:11.5px;" onclick="openDetailFromMine(${h.id})">查看</button>
+        <button class="btn" style="background:var(--red);padding:6px 12px;font-size:11.5px;" onclick="deletePost(${h.id})">删除</button>
+      </div>`;
+    }).join("");
+  }
+  document.getElementById("mineSheet").classList.add("show");
+}
+
+function openDetailFromMine(id){
+  closeSheet("mineSheet");
+  setTimeout(() => openDetail(id), 180);
 }
 
 /* =========================================================
@@ -934,12 +991,52 @@ function openDetail(id){
     </div>
     <div class="detail-actions">
       <button class="btn ghost" onclick="openReport(${h.id})">举报</button>
+      <button class="btn ghost" style="color:var(--red);border-color:var(--red);" onclick="deletePost(${h.id})">删除</button>
       <a class="btn${w}" style="text-decoration:none;text-align:center;" href="tel:${h.phone}">
         📞 ${btnText} ${maskPhone(h.phone)}
       </a>
     </div>
   `;
   document.getElementById("detailSheet").classList.add("show");
+}
+
+/* =========================================================
+   删除（本机管理 + 管理员密码）
+   ========================================================= */
+const ADMIN_PASS = "123456";   // ← 你的管理员密码，想改就改这里
+
+function deletePost(id){
+  const post = loadPosts().find(x => x.id === id);
+  if(!post) return;
+
+  // 判断是不是"本机发布"的（同设备发布者可直接删自己的）
+  const myUid = localStorage.getItem("hhd_uid");
+  const isMine = post.ownerUid && post.ownerUid === myUid;
+
+  if(isMine){
+    doDelete(id);
+    return;
+  }
+
+  // 不是本机发布的 → 需要管理员密码
+  const pass = prompt("请输入管理员密码：");
+  if(pass === null) return;               // 用户取消
+  if(pass !== ADMIN_PASS){
+    toast("密码错误，无法删除");
+    return;
+  }
+  doDelete(id);
+}
+
+function doDelete(id){
+  if(!confirm("确定要删除这条信息吗？删除后无法恢复。")) return;
+  const posts = loadPosts().filter(x => x.id !== id);
+  savePosts(posts);
+  closeSheet("detailSheet");
+  renderList();
+  // 如果"我的"页开着，同步刷新
+  if(document.getElementById("mineSheet").classList.contains("show")){ openMine(); }
+  toast("已删除");
 }
 
 function maskPhone(p){
@@ -1002,6 +1099,10 @@ function submitPost(){
   if(!phone || phone.length < 7){ toast("请填写有效的联系电话"); return; }
   if(isBlocked(phone)){ toast("该手机号已被拉黑，无法发布"); return; }
 
+  // 本机身份标识（用于"删除自己发布的内容"）
+  let myUid = localStorage.getItem("hhd_uid");
+  if(!myUid){ myUid = "u" + Math.random().toString(36).slice(2,9); localStorage.setItem("hhd_uid", myUid); }
+
   const posts = loadPosts();
 
   if(publishKind === "house"){
@@ -1017,7 +1118,7 @@ function submitPost(){
       type: document.querySelector('input[name="ftype"]:checked').value,
       term: document.querySelector('input[name="fterm"]:checked').value,
       phone, desc,
-      time: Date.now(), reports: [], reported:false
+      ownerUid: myUid, time: Date.now(), reports: [], reported:false
     });
     ["fBuilding","fSize","fPrice","fPhone","fDesc"].forEach(id =>
       document.getElementById(id).value = "");
@@ -1032,7 +1133,7 @@ function submitPost(){
       type: document.querySelector('input[name="wtype"]:checked').value,
       term: document.getElementById("wTerm").value,
       phone, desc,
-      time: Date.now(), reports: [], reported:false
+      ownerUid: myUid, time: Date.now(), reports: [], reported:false
     });
     ["wBuilding","wPrice","fPhone","fDesc"].forEach(id =>
       document.getElementById(id).value = "");
@@ -1050,7 +1151,7 @@ function submitPost(){
       cond: document.getElementById("gCond").value,
       price: price,
       phone, desc,
-      time: Date.now(), reports: [], reported:false
+      ownerUid: myUid, time: Date.now(), reports: [], reported:false
     });
     ["gTitle","gPrice","gBuilding","fPhone","fDesc"].forEach(id =>
       document.getElementById(id).value = "");
