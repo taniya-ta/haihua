@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>海花岛2号岛 · 社区信息板</title>
+<title>海花岛2号岛 · 生活信息板</title>
 <style>
   /* ============ 全局变量：想改配色，改这里就行 ============ */
   :root{
@@ -49,6 +49,22 @@
   }
   .mode-switch div.on{background:#fff; color:var(--brand); box-shadow:0 1px 4px rgba(0,0,0,.1);}
   .mode-switch div.on.want{color:var(--want);}
+  .mode-switch div.on.life{color:var(--goods);}
+
+  /* 生活板块子切换 */
+  .subswitch{
+    display:none; background:#fff; padding:10px 16px 0;
+    position:sticky; top:0; z-index:15;
+    border-bottom:1px solid var(--line);
+    box-shadow:0 2px 8px rgba(0,0,0,.03);
+  }
+  .subswitch.show{display:flex; gap:8px;}
+  .subswitch div{
+    flex:1; text-align:center; font-size:13px; padding:9px 0; cursor:pointer;
+    color:var(--sub); font-weight:600; border-radius:9px 9px 0 0;
+    transition:.18s; border-bottom:2px solid transparent;
+  }
+  .subswitch div.on{color:var(--goods); border-bottom-color:var(--goods); background:#f2faf4;}
   .mode-switch div.on.goods{color:var(--goods);}
 
   /* ============ 搜索 ============ */
@@ -170,15 +186,15 @@
     background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1;
   }
 
-  /* 选择"发房源/发求租"的大按钮 */
-  .pick-type{display:flex;gap:10px;padding:18px 16px;}
+  /* 选择"发布类型"的大按钮 */
+  .pick-type{display:flex;flex-wrap:wrap;gap:10px;padding:18px 16px;}
   .pick-type .pt{
-    flex:1;border-radius:14px;padding:18px 8px;text-align:center;cursor:pointer;
-    border:2px solid var(--line);transition:.15s;
+    flex:1 1 calc(33.33% - 7px);min-width:96px;border-radius:14px;padding:16px 8px;
+    text-align:center;cursor:pointer;border:2px solid var(--line);transition:.15s;
   }
   .pick-type .pt:active{transform:scale(.97);}
-  .pick-type .pt .i{font-size:28px;margin-bottom:8px;}
-  .pick-type .pt .n{font-size:14px;font-weight:700;margin-bottom:4px;}
+  .pick-type .pt .i{font-size:26px;margin-bottom:8px;}
+  .pick-type .pt .n{font-size:13.5px;font-weight:700;margin-bottom:4px;}
   .pick-type .pt .d{font-size:10.5px;color:var(--sub);line-height:1.5;}
   .pick-type .pt.house{border-color:var(--brand-light);}
   .pick-type .pt.house .n{color:var(--brand);}
@@ -186,6 +202,10 @@
   .pick-type .pt.want .n{color:var(--want);}
   .pick-type .pt.goods{border-color:var(--goods-light);}
   .pick-type .pt.goods .n{color:var(--goods);}
+  .pick-type .pt.car{border-color:#dbeafe;}
+  .pick-type .pt.car .n{color:#2563eb;}
+  .pick-type .pt.event{border-color:#fde68a;}
+  .pick-type .pt.event .n{color:#d97706;}
 
   /* 表单 */
   .field{padding:12px 16px;border-bottom:1px solid var(--line);}
@@ -319,19 +339,26 @@
 <!-- ==================== 测试版醒目横幅（顶部常驻） ==================== -->
 <div style="background:linear-gradient(135deg,#FFD93B,#FFB800);color:#5c3d00;text-align:center;padding:9px 12px;font-size:12.5px;font-weight:700;line-height:1.5;box-shadow:0 2px 8px rgba(255,184,0,.35);position:sticky;top:0;z-index:30;">
   🚧 测试版 · 请勿当真 🚧<br>
-  <span style="font-weight:600;font-size:11.5px;">房源未核验 · 别填隐私 · 数据可能丢失</span>
+  <span style="font-weight:600;font-size:11.5px;">信息未核验 · 别填隐私 · 数据可能丢失</span>
 </div>
 
 <!-- ==================== 顶部 ==================== -->
 <div class="topbar">
-  <h1>🏝️ 海花岛2号岛 · 社区信息板</h1>
-  <p>免费信息平台 · 租房 / 求租 / 二手 · 双方自行沟通 · 本平台不核验、不收费</p>
-  <!-- 房源/求租/二手 切换 -->
+  <h1>🏝️ 海花岛2号岛 · 生活信息板</h1>
+  <p>免费信息平台 · 租房 / 求租 / 生活（二手·拼车·活动） · 双方自行沟通 · 本平台不核验、不收费</p>
+  <!-- 一级：房源 / 求租 / 生活 -->
   <div class="mode-switch">
     <div id="modeHouse" class="on" onclick="setMode('house')">🏠 房源</div>
     <div id="modeWant" onclick="setMode('want')">🙋 求租</div>
-    <div id="modeGoods" onclick="setMode('goods')">🛋️ 二手</div>
+    <div id="modeLife" onclick="setMode('life')">🌴 生活</div>
   </div>
+</div>
+
+<!-- ==================== 生活板块子切换（仅生活板块显示） ==================== -->
+<div class="subswitch" id="subswitch">
+  <div id="subGoods" class="on" onclick="setSub('goods')">🛋️ 二手</div>
+  <div id="subCar" onclick="setSub('car')">🚗 拼车</div>
+  <div id="subEvent" onclick="setSub('event')">🎉 活动</div>
 </div>
 
 <!-- ==================== 搜索 + 筛选 ==================== -->
@@ -345,7 +372,7 @@
 
 <!-- ==================== 测试版提示（只在页面底部展示一次） ==================== -->
 <div style="padding:14px 16px 90px;text-align:center;font-size:11.5px;color:#9aa3ad;line-height:1.7;">
-  ⚠️ 这是一个<b>练习用测试版</b>，不核验房源真伪，请自行沟通确认。<br>
+  ⚠️ 这是一个<b>练习用测试版</b>，不核验信息真伪，请自行沟通确认。<br>
   请不要填写身份证、银行卡等敏感信息，数据可能丢失。
 </div>
 
@@ -393,9 +420,19 @@
         <div class="n">发布二手</div>
         <div class="d">转让闲置<br>出售物品</div>
       </div>
+      <div class="pt car" onclick="openPublish('car')">
+        <div class="i">🚗</div>
+        <div class="n">发布拼车</div>
+        <div class="d">顺路捎人<br>邻里互助</div>
+      </div>
+      <div class="pt event" onclick="openPublish('event')">
+        <div class="i">🎉</div>
+        <div class="n">发布活动</div>
+        <div class="d">组织活动<br>邻居同乐</div>
+      </div>
     </div>
     <div class="hint" style="padding-bottom:16px;">
-      ℹ️ 房源由房东发布，求租由租客发布，二手为物品转让，双方看到后自行联系。
+      ℹ️ 房源由房东发布，求租由租客发布，二手/拼车/活动为邻里互助信息，双方看到后自行联系。
     </div>
   </div>
 </div>
@@ -533,6 +570,56 @@
       </div>
     </div>
 
+    <!-- 拼车专有字段 -->
+    <div id="carFields" style="display:none;">
+      <div class="field">
+        <label>出发地</label>
+        <input id="cFrom" type="text" placeholder="如 海花岛2号岛 / 白马井高铁站">
+      </div>
+      <div class="field">
+        <label>目的地</label>
+        <input id="cTo" type="text" placeholder="如 海口美兰机场 / 儋州市区">
+      </div>
+      <div class="field-row" style="padding:0 16px;border-bottom:1px solid var(--line);">
+        <div class="field">
+          <label>出发时间</label>
+          <input id="cTime" type="text" placeholder="如 10月20日 上午8点">
+        </div>
+        <div class="field">
+          <label>可带人数</label>
+          <select id="cSeats">
+            <option>1人</option>
+            <option selected>2人</option>
+            <option>3人</option>
+            <option>4人及以上</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>类型</label>
+        <div class="radio-row">
+          <label><input type="radio" name="crole" value="我有车，可捎人" checked><span>我有车，可捎人</span></label>
+          <label><input type="radio" name="crole" value="我想搭车"><span>我想搭车</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 活动专有字段 -->
+    <div id="eventFields" style="display:none;">
+      <div class="field">
+        <label>活动名称</label>
+        <input id="eTitle" type="text" placeholder="如 周末海边徒步 / 楼下广场舞 / 包饺子">
+      </div>
+      <div class="field">
+        <label>活动地点</label>
+        <input id="ePlace" type="text" placeholder="如 2号岛东侧沙滩 / 8组团活动室">
+      </div>
+      <div class="field">
+        <label>活动时间</label>
+        <input id="eTime" type="text" placeholder="如 10月20日 周六 下午3点">
+      </div>
+    </div>
+
     <!-- 公共字段 -->
     <div class="field">
       <label>联系电话</label>
@@ -579,15 +666,15 @@
     <div class="gate-head">
       <div class="ic">🏝️</div>
       <h2>使用前请先阅读</h2>
-      <p>海花岛2号岛租房信息板<br>这是一个免费信息平台，请知晓以下事项</p>
+      <p>海花岛2号岛生活信息板<br>这是一个免费信息平台，请知晓以下事项</p>
     </div>
     <div class="gate-body">
       <ul class="gate-points">
-        <li><span class="n">1</span><span>本平台是<b>免费信息展示平台</b>，<b>不是房屋中介</b>，不收取任何费用。</span></li>
-        <li><span class="n">2</span><span>本平台<b>不核验房源信息真实性</b>，<b>不保证发布者一定是房东本人</b>，请务必自行核实。</span></li>
-        <li><span class="n">3</span><span>本平台<b>不参与交易、不代收押金</b>。请勿向任何人转账汇款，谨防诈骗。</span></li>
-        <li><span class="n">4</span><span>看房请结伴同行，签约前<b>核对房产证原件</b>，明确物业费、水电计费标准。</span></li>
-        <li><span class="n">5</span><span>二手交易请<b>当面验货、当面付款</b>，切勿先付款后发货，谨防诈骗。</span></li>
+        <li><span class="n">1</span><span>本平台是<b>免费信息展示平台</b>，覆盖租房、求租、二手、拼车、活动等信息，<b>不是中介机构</b>，不收取任何费用。</span></li>
+        <li><span class="n">2</span><span>本平台<b>不核验任何信息的真实性</b>，<b>不保证发布者身份真实</b>，请务必自行核实。</span></li>
+        <li><span class="n">3</span><span>本平台<b>不参与交易、不代收款项</b>。请勿向任何人转账汇款，谨防诈骗。</span></li>
+        <li><span class="n">4</span><span>租房请结伴看房，签约前<b>核对房产证原件</b>，明确物业费、水电计费标准。</span></li>
+        <li><span class="n">5</span><span>二手交易请<b>当面验货、当面付款</b>；<b>拼车为邻里自愿互助</b>，平台不组织、不担保，费用自行协商。</span></li>
         <li><span class="n">6</span><span>您与对方的交易、产生的任何纠纷，<b>由您与对方自行负责</b>。</span></li>
       </ul>
 
@@ -599,23 +686,23 @@
 
       <div class="fulltext" id="fulltext">
         <h3>一、平台性质</h3>
-        <p>本平台是由个人运营者提供的免费、非营利的租房信息展示平台，仅面向海南儋州海花岛2号岛。本平台不是房屋中介机构，不提供居间、代理等中介服务，不收取佣金或服务费。</p>
+        <p>本平台是由个人运营者提供的免费、非营利的生活信息展示平台，仅面向海南儋州海花岛2号岛。平台信息涵盖租房、求租、二手物品、拼车、邻里活动等类别。本平台不是中介机构，不提供居间、代理等中介服务，不收取佣金或服务费。</p>
 
         <h3>二、不提供核验（核心条款）</h3>
-        <p>本平台不对任何房源信息的真实性、准确性进行审核或核验，也无法保证发布者确实是房屋产权人或其合法授权人。房源信息由用户自行发布、发布即展示。</p>
-        <p>平台不对以下事项作任何保证：发布者是否为真实房东；房源是否真实存在、是否可用；房源描述、图片、价格等是否准确；发布者的身份与履约能力。</p>
+        <p>本平台不对任何信息的真实性、准确性进行审核或核验，也无法保证发布者身份真实（包括是否为房屋产权人本人）。所有信息由用户自行发布、发布即展示。</p>
+        <p>平台不对以下事项作任何保证：发布者身份是否真实；房源、物品、拼车、活动等信息是否真实存在；描述、图片、价格等是否准确；发布者的身份与履约能力。</p>
 
         <h3>三、用户发布规则</h3>
-        <p>发布者应确保其为房屋产权人本人或已取得合法授权，保证信息真实。不得发布虚假房源、不得以"预付定金""看房费"等名义骗取财物。发布者对其发布内容独立承担全部法律责任。</p>
+        <p>发布者应保证信息真实、合法。发布房源者应确保其为产权人本人或已取得合法授权；不得发布虚假信息，不得以"预付定金""看房费"等名义骗取财物。严禁借"拼车"名义从事非法营运，严禁借"活动"名义从事商业推广或收费。发布者对其发布内容独立承担全部法律责任。</p>
 
         <h3>四、安全提示</h3>
-        <p>线下看房建议结伴同行；签约前务必核对房屋产权证原件及产权人身份证件；切勿向陌生人转账、汇款或支付定金、押金；明确物业费、水电燃气费的承担方及计费标准；签订书面租赁合同。</p>
+        <p>租房请结伴看房，签约前务必核对房屋产权证原件及产权人身份证件，切勿向陌生人转账、汇款或支付定金、押金。二手交易请当面验货付款。拼车属邻里自愿互助行为，平台不参与、不组织、不担保，请自行核实对方身份与车况，费用自行协商，途中安全风险由双方自行承担。参加活动属自愿行为，请自行判断风险。</p>
 
         <h3>五、举报与拉黑</h3>
         <p>用户可对存在问题的信息进行举报。同一信息被不同用户累计举报达到一定次数时，平台将标记或下架。经核实确认违规的发布者，平台有权下架其信息并限制其继续发布。平台的拉黑处理为自主管理行为，不构成对任何个人或事实的法律认定。</p>
 
         <h3>六、免责声明</h3>
-        <p>本平台仅提供信息展示场所，不对用户之间因租房产生的任何纠纷承担责任，包括房源虚假、押金纠纷、合同违约、人身财产损害等。因不可抗力、系统维护等导致的服务中断或损失，平台不承担责任。本平台为免费服务，运营者不以本平台盈利。</p>
+        <p>本平台仅提供信息展示场所，不对用户之间因租房、二手交易、拼车、活动等产生的任何纠纷承担责任，包括信息虚假、押金纠纷、合同违约、交通事故、人身财产损害等。因不可抗力、系统维护等导致的服务中断或损失，平台不承担责任。本平台为免费服务，运营者不以本平台盈利。</p>
 
         <h3>七、个人信息</h3>
         <p>本平台为纯前端网页，数据存储于用户自身的浏览器本地，运营者不收集、不存储用户的个人信息。用户发布的联系电话为自愿公开。</p>
@@ -637,7 +724,7 @@
 
 <script>
 /* =========================================================
-   海花岛2号岛 · 租房信息板
+   海花岛2号岛 · 生活信息板
    数据均存浏览器本地（localStorage）
    ========================================================= */
 
@@ -671,6 +758,18 @@ const REPORT_REASONS_GOODS = [
   "要求预付定金后消失",
   "疑似商家冒充个人",
   "价格或描述不实"
+];
+const REPORT_REASONS_CAR = [
+  "疑似专业营运车辆（非邻里互助）",
+  "疑似虚假拼车信息",
+  "要求提前支付费用",
+  "内容与拼车无关（广告）"
+];
+const REPORT_REASONS_EVENT = [
+  "疑似商业推广 / 收费活动",
+  "疑似虚假活动信息",
+  "内容与活动无关（广告）",
+  "联系方式无效"
 ];
 
 const REPORT_THRESHOLD = 3;
@@ -772,7 +871,8 @@ function seedDemo(){
    状态
    ========================================================= */
 let currentArea = "全部";
-let currentMode = "house";   // house | want | goods
+let currentMode = "house";   // house | want | life
+let currentSub  = "goods";   // goods | car | event（仅生活板块用）
 let publishKind = "house";   // 当前发布的类型
 
 /* =========================================================
@@ -782,18 +882,41 @@ function setMode(m){
   currentMode = m;
   document.getElementById("modeHouse").classList.toggle("on", m==="house");
   document.getElementById("modeWant").classList.toggle("on", m==="want");
-  document.getElementById("modeGoods").classList.toggle("on", m==="goods");
+  document.getElementById("modeLife").classList.toggle("on", m==="life");
   document.getElementById("modeWant").classList.toggle("want", m==="want");
-  document.getElementById("modeGoods").classList.toggle("goods", m==="goods");
+  document.getElementById("modeLife").classList.toggle("life", m==="life");
+
+  // 生活板块显示子切换栏
+  const sub = document.getElementById("subswitch");
+  if(m === "life"){ sub.classList.add("show"); }
+  else{ sub.classList.remove("show"); }
+
   const ph = { house:"🔍 搜索组团 / 户型 / 关键词…",
                want:"🔍 搜索想租的组团 / 户型…",
-               goods:"🔍 搜索物品名称 / 关键词…" };
+               life:"🔍 搜索关键词…" };
   document.getElementById("searchInput").placeholder = ph[m] || ph.house;
+  renderFilters();
+  renderList();
+}
+
+// 生活板块内部：二手 / 拼车 / 活动
+function setSub(s){
+  currentSub = s;
+  document.getElementById("subGoods").classList.toggle("on", s==="goods");
+  document.getElementById("subCar").classList.toggle("on", s==="car");
+  document.getElementById("subEvent").classList.toggle("on", s==="event");
+  document.getElementById("searchInput").value = "";
+  currentArea = "全部";
   renderFilters();
   renderList();
 }
 function switchTab(tab){
   if(tab === "mine"){ openMine(); }
+}
+
+// 当前实际展示的类型（把"生活"展开成具体子类）
+function activeKind(){
+  return currentMode === "life" ? currentSub : currentMode;
 }
 
 /* =========================================================
@@ -813,19 +936,35 @@ function openMine(){
       <div class="big">📭</div>你还没有发布过内容<br>点底部「➕ 发布」发一条试试
     </div>`;
   }else{
-    const kindName  = { house:"房源", want:"求租", goods:"二手" };
-    const kindColor = { house:"var(--brand)", want:"var(--want)", goods:"var(--goods)" };
+    const kindName  = { house:"房源", want:"求租", goods:"二手", car:"拼车", event:"活动" };
+    const kindColor = { house:"var(--brand)", want:"var(--want)", goods:"var(--goods)", car:"#2563eb", event:"#d97706" };
     box.innerHTML = mine.map(h => {
       const k = h.kind || "house";
-      const title = k==="goods" ? (h.title||"二手物品")
-                  : (k==="want" ? ("求租 · "+h.room) : ("房源 · "+h.room));
-      const priceTxt = h.price ? (h.price + (k==="want" ? " 元/月预算" : (k==="goods" ? " 元" : " 元/月"))) : "面议";
+      let title;
+      if(k==="goods")      title = h.title || "二手物品";
+      else if(k==="car")   title = `${h.from||'—'} → ${h.to||'—'}`;
+      else if(k==="event") title = h.title || "活动";
+      else if(k==="want")  title = "求租 · " + h.room;
+      else                 title = "房源 · " + h.room;
+
+      let priceTxt;
+      if(k==="want")       priceTxt = h.price ? (h.price + " 元/月预算") : "面议";
+      else if(k==="goods") priceTxt = h.price ? (h.price + " 元") : "面议";
+      else if(k==="car")   priceTxt = h.ctime ? h.ctime : "时间待定";
+      else if(k==="event") priceTxt = h.etime ? h.etime : "时间待定";
+      else                 priceTxt = h.price ? (h.price + " 元/月") : "面议";
+
+      let locTxt;
+      if(k==="car")        locTxt = "";
+      else if(k==="event") locTxt = h.place ? (" · " + h.place) : "";
+      else                 locTxt = (h.area||"") + "组团" + (h.building ? " · " + h.building : "");
+
       return `
       <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);">
         <span style="font-size:10.5px;color:#fff;background:${kindColor[k]||'var(--brand)'};padding:3px 8px;border-radius:6px;flex-shrink:0;">${kindName[k]||'房源'}</span>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
-          <div style="font-size:11.5px;color:var(--sub);margin-top:2px;">${h.area||''}组团${h.building?' · '+h.building:''} · ${priceTxt}</div>
+          <div style="font-size:11.5px;color:var(--sub);margin-top:2px;">${locTxt}${locTxt&&priceTxt?' · ':''}${priceTxt}</div>
         </div>
         <button class="btn ghost" style="padding:6px 12px;font-size:11.5px;" onclick="openDetailFromMine(${h.id})">查看</button>
         <button class="btn" style="background:var(--red);padding:6px 12px;font-size:11.5px;" onclick="deletePost(${h.id})">删除</button>
@@ -845,8 +984,14 @@ function openDetailFromMine(id){
    ========================================================= */
 function renderFilters(){
   const box = document.getElementById("filters");
+  const k = activeKind();
+  // 拼车、活动不按组团筛选
+  if(k === "car" || k === "event"){
+    box.innerHTML = "";
+    return;
+  }
   const all = ["全部", ...AREAS];
-  const cls = currentMode === "want" ? "want" : (currentMode === "goods" ? "goods" : "");
+  const cls = currentMode === "want" ? "want" : (currentMode === "life" ? "goods" : "");
   box.innerHTML = all.map(a =>
     `<div class="chip ${a===currentArea?'on':''} ${cls}"
           onclick="setArea('${a}')">${a}</div>`
@@ -859,7 +1004,8 @@ function setArea(a){ currentArea = a; renderFilters(); renderList(); }
    ========================================================= */
 function renderList(){
   const box = document.getElementById("list");
-  let posts = loadPosts().filter(p => p.kind === currentMode);
+  const k = activeKind();
+  let posts = loadPosts().filter(p => p.kind === k);
   const kw = document.getElementById("searchInput").value.trim();
 
   if(currentArea !== "全部"){
@@ -867,7 +1013,7 @@ function renderList(){
   }
   if(kw){
     posts = posts.filter(p =>
-      ((p.area||"")+(p.room||"")+(p.desc||"")+(p.type||"")+(p.building||"")+(p.title||"")+(p.cond||"")).includes(kw)
+      ((p.area||"")+(p.room||"")+(p.desc||"")+(p.type||"")+(p.building||"")+(p.title||"")+(p.cond||"")+(p.from||"")+(p.to||"")+(p.place||"")).includes(kw)
     );
   }
   posts = posts.filter(p => !p.removed);
@@ -877,9 +1023,11 @@ function renderList(){
     const map = {
       house:['🏝️','这个区域还没有房源'],
       want: ['🙋','还没有人发求租信息'],
-      goods:['🛋️','这个区域还没有二手物品']
+      goods:['🛋️','这个区域还没有二手物品'],
+      car:  ['🚗','还没有拼车信息'],
+      event:['🎉','还没有活动信息']
     };
-    const [icon, txt] = map[currentMode] || map.house;
+    const [icon, txt] = map[k] || map.house;
     box.innerHTML = `<div class="empty">
       <div class="big">${icon}</div>${txt}<br>点底部「➕ 发布」发一条
     </div>`;
@@ -887,30 +1035,43 @@ function renderList(){
   }
 
   box.innerHTML = posts.map(h => {
-    const isWant  = h.kind === "want";
-    const isGoods = h.kind === "goods";
-    const w = isWant ? " want" : (isGoods ? " goods" : "");
-    const cls = w.trim();
-    const kindLabel = isWant ? "求租" : (isGoods ? "二手" : h.type);
-    const imgText = isWant ? "求租者信息" : (isGoods ? "物品图片" : "房源图片");
+    const kind = h.kind || "house";
+    const w = (kind==="want") ? " want" : ((kind==="goods") ? " goods" : "");
+    const kindLabelMap = { house:h.type, want:"求租", goods:"二手", car:"拼车", event:"活动" };
+    const kindLabel = kindLabelMap[kind] || "房源";
+    const imgTextMap = { house:"房源图片", want:"求租者信息", goods:"物品图片", car:"拼车信息", event:"活动信息" };
+    const imgText = imgTextMap[kind] || "房源图片";
 
     // 标题
     let title;
-    if(isWant)       title = `求租 · ${h.room}${h.price?'（预算'+h.price+'元/月）':''}`;
-    else if(isGoods) title = h.title || "二手物品";
-    else             title = `海花岛2号岛 · ${h.room} ${h.size?h.size+'m²':''}`;
+    if(kind==="want")       title = `求租 · ${h.room}${h.price?'（预算'+h.price+'元/月）':''}`;
+    else if(kind==="goods") title = h.title || "二手物品";
+    else if(kind==="car")   title = `${h.from||'—'} → ${h.to||'—'}`;
+    else if(kind==="event") title = h.title || "活动";
+    else                    title = `海花岛2号岛 · ${h.room} ${h.size?h.size+'m²':''}`;
 
     // 副标题
     let sub;
-    if(isWant)       sub = `想租：${h.area}组团${h.building?' · '+h.building:''} · ${h.term}`;
-    else if(isGoods) sub = `${h.area}组团${h.building?' · '+h.building:''}${h.cond?' · '+h.cond:''}`;
-    else             sub = `${h.area}组团${h.building?' · '+h.building:''} · ${h.term}`;
+    if(kind==="want")       sub = `想租：${h.area}组团${h.building?' · '+h.building:''} · ${h.term}`;
+    else if(kind==="goods") sub = `${h.area}组团${h.building?' · '+h.building:''}${h.cond?' · '+h.cond:''}`;
+    else if(kind==="car")   sub = `${h.role||''}${h.ctime?' · '+h.ctime:''}${h.seats?' · 可带'+h.seats:''}`;
+    else if(kind==="event") sub = `${h.place||'地点待定'}${h.etime?' · '+h.etime:''}`;
+    else                    sub = `${h.area}组团${h.building?' · '+h.building:''} · ${h.term}`;
 
     // 标签
-    let tags = `<span class="tag area${w}">${h.area}</span>`;
-    if(h.building) tags += `<span class="tag">${h.building}</span>`;
-    if(isGoods){
+    let tags = "";
+    if(kind==="house" || kind==="want" || kind==="goods"){
+      tags += `<span class="tag area${w}">${h.area}</span>`;
+      if(h.building) tags += `<span class="tag">${h.building}</span>`;
+    }
+    if(kind==="goods"){
       if(h.cond) tags += `<span class="tag">${h.cond}</span>`;
+    }else if(kind==="car"){
+      if(h.seats) tags += `<span class="tag">可带 ${h.seats}</span>`;
+      if(h.ctime) tags += `<span class="tag">${h.ctime}</span>`;
+    }else if(kind==="event"){
+      if(h.place) tags += `<span class="tag">📍${h.place}</span>`;
+      if(h.etime) tags += `<span class="tag">🕒${h.etime}</span>`;
     }else{
       tags += `<span class="tag">${h.room}</span>`;
       if(h.size) tags += `<span class="tag">${h.size}m²</span>`;
@@ -918,8 +1079,13 @@ function renderList(){
     }
 
     // 价格 + 按钮
-    const priceUnit = isWant ? '元/月预算' : (isGoods ? '元' : '元/月');
-    const btnText   = isWant ? '联系TA' : (isGoods ? '联系TA' : '联系房东');
+    const priceUnit = kind==="want" ? '元/月预算' : ((kind==="goods") ? '元' : '元/月');
+    const btnText   = kind==="house" ? '联系房东' : '联系TA';
+    const noPrice   = (kind==="car" || kind==="event");
+
+    const priceHtml = noPrice
+      ? `<div class="price${w}">${kind==="car"?'拼车互助':'邻里活动'}</div>`
+      : `<div class="price${w}">${h.price||'面议'}<small> ${priceUnit}</small></div>`;
 
     return `
     <div class="card${w} ${h.reported?'reported':''}">
@@ -934,7 +1100,7 @@ function renderList(){
         <div class="card-sub">${sub}</div>
         <div class="tags">${tags}</div>
         <div class="card-foot">
-          <div class="price${w}">${h.price||'面议'}<small> ${priceUnit}</small></div>
+          ${priceHtml}
           <button class="btn${w}" onclick="openDetail(${h.id})">${btnText}</button>
         </div>
       </div>
@@ -948,12 +1114,15 @@ function renderList(){
 function openDetail(id){
   const h = loadPosts().find(x => x.id === id);
   if(!h) return;
-  const isWant  = h.kind === "want";
-  const isGoods = h.kind === "goods";
-  const cls = isWant ? "want" : (isGoods ? "goods" : "");
+  const kind = h.kind || "house";
+  const isWant  = kind === "want";
+  const isGoods = kind === "goods";
+  const isCar   = kind === "car";
+  const isEvent = kind === "event";
+  const cls = isWant ? "want" : ((isGoods||isCar||isEvent) ? "goods" : "");
   const w = cls ? " " + cls : "";
 
-  let rows, title, imgText, priceUnit, btnText, priceMain, priceSmall, subLine;
+  let rows, title, imgText, btnText, priceMain, priceSmall, subLine, blockTitle, notice;
   if(isWant){
     rows = `
       <div>想租组团<b>${h.area}</b></div>
@@ -962,9 +1131,11 @@ function openDetail(id){
       <div>预算月租<b>${h.price?h.price+' 元':'面议'}</b></div>
       <div>租期<b>${h.term}</b></div>
       <div>房屋要求<b>${h.type||'—'}</b></div>`;
-    title = "求租详情"; imgText = "求租者信息"; priceUnit = "元/月预算";
+    title = "求租详情"; imgText = "求租者信息";
     btnText = "联系TA"; priceMain = h.price||'面议'; priceSmall = "元/月预算";
     subLine = "想租：" + h.area + "组团" + (h.building?" · "+h.building:"");
+    blockTitle = "求租要求";
+    notice = '⚠️ 本平台<b>不核验身份、不参与交易、不代收押金</b>。请务必线下看房、核对房产证原件后再签约，谨防诈骗。';
   }else if(isGoods){
     rows = `
       <div>物品名称<b>${h.title||'—'}</b></div>
@@ -973,9 +1144,34 @@ function openDetail(id){
       <div>所在组团<b>${h.area}</b></div>
       <div>楼栋号<b>${h.building||'—'}</b></div>
       <div>交易方式<b>线下自提</b></div>`;
-    title = "二手详情"; imgText = "物品图片"; priceUnit = "元";
+    title = "二手详情"; imgText = "物品图片";
     btnText = "联系TA"; priceMain = h.price||'面议'; priceSmall = "元";
     subLine = "海花岛2号岛 · " + h.area + "组团" + (h.building?" · "+h.building:"");
+    blockTitle = "物品信息";
+    notice = '⚠️ 本平台<b>不核验身份、不参与交易、不代收押金</b>。二手交易请<b>当面验货、当面付款</b>，切勿先付款后发货，谨防诈骗。';
+  }else if(isCar){
+    rows = `
+      <div>出发地<b>${h.from||'—'}</b></div>
+      <div>目的地<b>${h.to||'—'}</b></div>
+      <div>出发时间<b>${h.ctime||'待定'}</b></div>
+      <div>可带人数<b>${h.seats||'—'}</b></div>
+      <div>发布类型<b>${h.role||'—'}</b></div>`;
+    title = "拼车详情"; imgText = "拼车信息";
+    btnText = "联系TA"; priceMain = "邻里互助"; priceSmall = "";
+    subLine = `${h.from||'—'} → ${h.to||'—'}`;
+    blockTitle = "拼车信息";
+    notice = '⚠️ 本平台仅为<b>邻里顺路互助信息</b>，<b>不参与、不组织、不担保、不收费</b>。拼车属自愿行为，请自行核实对方身份与车况，<b>费用自行协商（建议 AA 油费）</b>，途中安全风险由双方自行承担。';
+  }else if(isEvent){
+    rows = `
+      <div>活动名称<b>${h.title||'—'}</b></div>
+      <div>活动地点<b>${h.place||'待定'}</b></div>
+      <div>活动时间<b>${h.etime||'待定'}</b></div>
+      <div>参与方式<b>直接联系发起人</b></div>`;
+    title = "活动详情"; imgText = "活动信息";
+    btnText = "联系发起人"; priceMain = "邻里活动"; priceSmall = "";
+    subLine = `${h.place||'地点待定'}${h.etime?' · '+h.etime:''}`;
+    blockTitle = "活动信息";
+    notice = '⚠️ 本平台<b>仅发布活动信息，不组织、不收费、不承担活动责任</b>。活动由发起人自行组织，参与属自愿行为，请自行判断风险。';
   }else{
     rows = `
       <div>所属组团<b>${h.area}</b></div>
@@ -984,14 +1180,18 @@ function openDetail(id){
       <div>面积<b>${h.size?h.size+' m²':'—'}</b></div>
       <div>房屋类型<b>${h.type}</b></div>
       <div>可租租期<b>${h.term}</b></div>`;
-    title = "房源详情"; imgText = "房源图片"; priceUnit = "元/月";
+    title = "房源详情"; imgText = "房源图片";
     btnText = "联系房东"; priceMain = h.price||'面议'; priceSmall = "元/月";
     subLine = "海花岛2号岛 · " + h.area + "组团" + (h.building?" · "+h.building:"");
+    blockTitle = "房源信息";
+    notice = '⚠️ 本平台<b>不核验身份、不参与交易、不代收押金</b>。请务必线下看房、核对房产证原件后再签约，谨防诈骗。';
   }
 
-  const mainT = isGoods
-    ? (h.title||'二手物品') + (h.cond ? ' · ' + h.cond : '')
-    : (isWant ? '求租 · ' : '') + h.room + ((!isWant&&h.size)?' · '+h.size+'m²':'') + ' · ' + h.type;
+  let mainT;
+  if(isGoods)      mainT = (h.title||'二手物品') + (h.cond ? ' · ' + h.cond : '');
+  else if(isCar)   mainT = `${h.from||''} → ${h.to||''}`;
+  else if(isEvent) mainT = h.title || '活动';
+  else             mainT = (isWant ? '求租 · ' : '') + h.room + ((!isWant&&h.size)?' · '+h.size+'m²':'') + ' · ' + h.type;
 
   document.getElementById("detailInner").innerHTML = `
     <div class="sheet-head">
@@ -1005,18 +1205,14 @@ function openDetail(id){
       <div class="s">${subLine}</div>
     </div>
     <div class="detail-block">
-      <h3>${isWant?'求租要求':(isGoods?'物品信息':'房源信息')}</h3>
+      <h3>${blockTitle}</h3>
       <div class="kv">${rows}</div>
     </div>
     <div class="detail-block">
       <h3>补充说明</h3>
       <div style="font-size:13.5px;line-height:1.8;color:#374151;">${h.desc || '暂未填写说明'}</div>
     </div>
-    <div class="notice">
-      ⚠️ 本平台<b>不核验身份、不参与交易、不代收押金</b>。${
-        isGoods ? '二手交易请<b>当面验货、当面付款</b>，切勿先付款后发货，谨防诈骗。'
-                : '请务必线下看房、核对房产证原件后再签约，谨防诈骗。'}
-    </div>
+    <div class="notice">${notice}</div>
     <div class="detail-actions">
       <button class="btn ghost" onclick="openReport(${h.id})">举报</button>
       <button class="btn ghost" style="color:var(--red);border-color:var(--red);" onclick="deletePost(${h.id})">删除</button>
@@ -1090,11 +1286,15 @@ function openPublish(kind){
 
   const isWant  = kind === "want";
   const isGoods = kind === "goods";
-  const titleMap = { house:"发布房源", want:"发布求租", goods:"发布二手物品" };
+  const isCar   = kind === "car";
+  const isEvent = kind === "event";
+  const titleMap = { house:"发布房源", want:"发布求租", goods:"发布二手物品", car:"发布拼车", event:"发布活动" };
   document.getElementById("publishTitle").textContent = titleMap[kind] || "发布";
   document.getElementById("houseFields").style.display = (kind==="house") ? "block" : "none";
   document.getElementById("wantFields").style.display  = isWant ? "block" : "none";
   document.getElementById("goodsFields").style.display = isGoods ? "block" : "none";
+  document.getElementById("carFields").style.display   = isCar ? "block" : "none";
+  document.getElementById("eventFields").style.display = isEvent ? "block" : "none";
   document.getElementById("submitBtn").className =
     "btn block" + (isWant ? " want" : (isGoods ? " goods" : ""));
 
@@ -1117,6 +1317,14 @@ function openPublish(kind){
     goods: {
       label: "物品说明",
       ph: "比如用了多久、有无瑕疵、配件是否齐全、在哪里面交、能不能小刀…"
+    },
+    car: {
+      label: "补充说明",
+      ph: "比如走哪条路线、能否带行李、费用怎么分摊（建议 AA 油费）、能不能中途停…"
+    },
+    event: {
+      label: "活动说明",
+      ph: "比如活动内容、要带什么、大概多少人、怎么集合、下雨是否取消…"
     }
   };
   const cfg = descCfg[kind] || descCfg.house;
@@ -1170,6 +1378,37 @@ function submitPost(){
     });
     ["wBuilding","wPrice","fPhone","fDesc"].forEach(id =>
       document.getElementById(id).value = "");
+  }else if(publishKind === "car"){
+    // 拼车
+    const from = document.getElementById("cFrom").value.trim();
+    const to   = document.getElementById("cTo").value.trim();
+    if(!from){ toast("请填写出发地"); return; }
+    if(!to){ toast("请填写目的地"); return; }
+    posts.push({
+      id: Date.now(), kind:"car",
+      from: from, to: to,
+      ctime: document.getElementById("cTime").value.trim(),
+      seats: document.getElementById("cSeats").value,
+      role: document.querySelector('input[name="crole"]:checked').value,
+      phone, desc,
+      ownerUid: myUid, time: Date.now(), reports: [], reported:false
+    });
+    ["cFrom","cTo","cTime","fPhone","fDesc"].forEach(id =>
+      document.getElementById(id).value = "");
+  }else if(publishKind === "event"){
+    // 活动
+    const title = document.getElementById("eTitle").value.trim();
+    if(!title){ toast("请填写活动名称"); return; }
+    posts.push({
+      id: Date.now(), kind:"event",
+      title: title,
+      place: document.getElementById("ePlace").value.trim(),
+      etime: document.getElementById("eTime").value.trim(),
+      phone, desc,
+      ownerUid: myUid, time: Date.now(), reports: [], reported:false
+    });
+    ["eTitle","ePlace","eTime","fPhone","fDesc"].forEach(id =>
+      document.getElementById(id).value = "");
   }else{
     // 二手
     const title = document.getElementById("gTitle").value.trim();
@@ -1192,10 +1431,16 @@ function submitPost(){
 
   savePosts(posts);
   // 发布后自动切到对应列表
-  setMode(publishKind);
+  if(publishKind === "car" || publishKind === "event" || publishKind === "goods"){
+    setSub(publishKind);
+    setMode("life");
+  }else{
+    setMode(publishKind);
+  }
   closeSheet("publishSheet");
   renderList();
-  const msgMap = { house:"房源已发布！", want:"求租信息已发布！", goods:"二手物品已发布！" };
+  const msgMap = { house:"房源已发布！", want:"求租信息已发布！", goods:"二手物品已发布！",
+                   car:"拼车信息已发布！", event:"活动已发布！" };
   toast(msgMap[publishKind] || "发布成功！");
 }
 
@@ -1210,6 +1455,8 @@ function openReport(id){
   let reasons = REPORT_REASONS_HOUSE;
   if(post && post.kind === "want")  reasons = REPORT_REASONS_WANT;
   if(post && post.kind === "goods") reasons = REPORT_REASONS_GOODS;
+  if(post && post.kind === "car")   reasons = REPORT_REASONS_CAR;
+  if(post && post.kind === "event") reasons = REPORT_REASONS_EVENT;
   document.getElementById("reportList").innerHTML = reasons.map((r,i) => `
     <label class="report-item">
       <input type="radio" name="reason" value="${r}" ${i===0?'checked':''}>
