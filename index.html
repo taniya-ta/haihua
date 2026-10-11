@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>海花岛2号岛 · 社区信息板</title>
+<style>
+  /* ============ 全局变量：想改配色，改这里就行 ============ */
+  :root{
+    --brand: #0b6bcb;        /* 主色（蓝）—— 房源 */
+    --brand-light: #e8f1fb;
+    --want: #e07b1f;         /* 求租色（橙） */
+    --want-light: #fdf2e4;
+    --goods: #0f9d76;        /* 二手色（绿） */
+    --goods-light: #e6f7f1;
+    --bg: #f2f4f7;
+    --card: #ffffff;
+    --text: #1f2937;
+    --sub: #6b7280;
+    --line: #e5e7eb;
+    --red: #e5484d;
+    --green: #12a150;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg); color:var(--text);
+    max-width:480px; margin:0 auto; min-height:100vh;
+    padding-bottom:64px; position:relative;
+  }
+
+  /* ============ 顶部 ============ */
+  .topbar{
+    background:var(--brand); color:#fff; padding:14px 16px 0;
+    position:sticky; top:0; z-index:20;
+  }
+  .topbar h1{font-size:16.5px;font-weight:700;display:flex;align-items:center;gap:6px;}
+  .topbar p{font-size:11px;opacity:.9;margin-top:4px;padding-bottom:12px;}
+
+  /* 房源/求租 切换 */
+  .mode-switch{
+    display:flex; gap:0; background:rgba(255,255,255,.18);
+    border-radius:10px; padding:3px; margin-bottom:12px;
+  }
+  .mode-switch div{
+    flex:1; text-align:center; font-size:13.5px; padding:8px 0;
+    border-radius:8px; cursor:pointer; color:rgba(255,255,255,.85);
+    transition:.18s; font-weight:600;
+  }
+  .mode-switch div.on{background:#fff; color:var(--brand); box-shadow:0 1px 4px rgba(0,0,0,.1);}
+  .mode-switch div.on.want{color:var(--want);}
+  .mode-switch div.on.goods{color:var(--goods);}
+
+  /* ============ 搜索 ============ */
+  .searchwrap{padding:10px 12px 0;}
+  .searchwrap input{
+    width:100%; border:none; border-radius:10px; padding:11px 14px;
+    font-size:14px; outline:none; background:#fff;
+    box-shadow:0 1px 6px rgba(0,0,0,.05);
+  }
+
+  /* ============ 筛选 ============ */
+  .filters{
+    display:flex; gap:8px; padding:10px 12px; overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .filters::-webkit-scrollbar{height:0;}
+  .chip{
+    flex-shrink:0; background:#fff; border:1px solid var(--line);
+    border-radius:16px; padding:6px 14px; font-size:12.5px; color:#374151;
+    cursor:pointer; transition:.15s;
+  }
+  .chip.on{background:var(--brand); border-color:var(--brand); color:#fff; font-weight:600;}
+  .chip.on.want{background:var(--want); border-color:var(--want);}
+  .chip.on.goods{background:var(--goods); border-color:var(--goods);}
+
+  /* ============ 卡片 ============ */
+  .list{padding:0 12px;}
+  .card{
+    background:var(--card); border-radius:14px; margin-bottom:12px;
+    overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.05);
+    position:relative;
+  }
+  .card.want{border:1.5px solid var(--want-light);}
+  .card.goods{border:1.5px solid var(--goods-light);}
+  .card-img{
+    height:132px; background:linear-gradient(135deg,#a9cdf0,#d6e6f7);
+    display:flex; align-items:center; justify-content:center;
+    color:#3f6ea3; font-size:12px; position:relative;
+  }
+  .card-img.want{background:linear-gradient(135deg,#f4d3a8,#fbe8cf); color:#a3722f;}
+  .card-img.goods{background:linear-gradient(135deg,#a8e0cf,#d3f0e6); color:#2f7a63;}
+  .card-img .tag-loft{
+    position:absolute; top:8px; left:8px; background:rgba(0,0,0,.55);
+    color:#fff; font-size:10px; padding:3px 8px; border-radius:20px;
+  }
+  .card-img .report-btn{
+    position:absolute; top:8px; right:8px; background:rgba(255,255,255,.92);
+    color:#9aa1ab; font-size:10px; padding:3px 9px; border-radius:20px;
+    border:none; cursor:pointer;
+  }
+  .card-body{padding:12px;}
+  .card-title{font-size:15px;font-weight:700;margin-bottom:5px;}
+  .card-sub{font-size:12px;color:var(--sub);margin-bottom:9px;line-height:1.5;}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .tag{font-size:10.5px;background:#f3f4f6;color:#4b5563;padding:3px 8px;border-radius:6px;}
+  .tag.area{background:var(--brand-light);color:var(--brand);font-weight:600;}
+  .tag.area.want{background:var(--want-light);color:var(--want);}
+  .tag.area.goods{background:var(--goods-light);color:var(--goods);}
+  .card-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    border-top:1px solid var(--line);padding-top:10px;
+  }
+  .price{color:var(--red);font-size:19px;font-weight:800;}
+  .price.want{color:var(--want);}
+  .price.goods{color:var(--goods);}
+  .price small{font-size:11px;font-weight:400;color:var(--sub);}
+  .btn{
+    background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;
+    border:none;padding:8px 16px;border-radius:20px;cursor:pointer;
+  }
+  .btn.want{background:var(--want);}
+  .btn.goods{background:var(--goods);}
+  .btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand);}
+  .btn.danger{background:var(--red);}
+  .btn.block{width:100%;padding:13px;border-radius:12px;font-size:15px;display:block;}
+
+  /* 被举报 */
+  .card.reported{opacity:.55;}
+  .report-flag{
+    position:absolute; top:0; left:0; right:0;
+    background:#fef3c7; color:#92400e; font-size:11px;
+    padding:6px 12px; text-align:center;
+  }
+
+  /* 空状态 */
+  .empty{text-align:center;padding:56px 20px;color:var(--sub);font-size:13px;line-height:1.9;}
+  .empty .big{font-size:36px;margin-bottom:10px;}
+
+  /* 底部导航 */
+  .tabbar{
+    position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;
+    height:58px;background:#fff;border-top:1px solid var(--line);
+    display:flex;z-index:30;
+  }
+  .tabbar div{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-size:10.5px;color:#9ca3af;gap:3px;cursor:pointer;
+  }
+  .tabbar div.active{color:var(--brand);font-weight:700;}
+  .tabbar .ico{font-size:18px;line-height:1;}
+
+  /* 弹层 */
+  .sheet{
+    position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:50;
+    display:none;align-items:flex-end;justify-content:center;
+  }
+  .sheet.show{display:flex;}
+  .sheet-inner{
+    background:#fff;width:100%;max-width:480px;border-radius:18px 18px 0 0;
+    max-height:92vh;overflow-y:auto;padding-bottom:20px;
+  }
+  .sheet-head{
+    position:sticky;top:0;background:#fff;padding:16px;
+    display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid var(--line);border-radius:18px 18px 0 0;z-index:2;
+  }
+  .sheet-head h2{font-size:16px;}
+  .sheet-head .close{
+    background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1;
+  }
+
+  /* 选择"发房源/发求租"的大按钮 */
+  .pick-type{display:flex;gap:10px;padding:18px 16px;}
+  .pick-type .pt{
+    flex:1;border-radius:14px;padding:18px 8px;text-align:center;cursor:pointer;
+    border:2px solid var(--line);transition:.15s;
+  }
+  .pick-type .pt:active{transform:scale(.97);}
+  .pick-type .pt .i{font-size:28px;margin-bottom:8px;}
+  .pick-type .pt .n{font-size:14px;font-weight:700;margin-bottom:4px;}
+  .pick-type .pt .d{font-size:10.5px;color:var(--sub);line-height:1.5;}
+  .pick-type .pt.house{border-color:var(--brand-light);}
+  .pick-type .pt.house .n{color:var(--brand);}
+  .pick-type .pt.want{border-color:var(--want-light);}
+  .pick-type .pt.want .n{color:var(--want);}
+  .pick-type .pt.goods{border-color:var(--goods-light);}
+  .pick-type .pt.goods .n{color:var(--goods);}
+
+  /* 表单 */
+  .field{padding:12px 16px;border-bottom:1px solid var(--line);}
+  .field label{display:block;font-size:12.5px;color:var(--sub);margin-bottom:7px;}
+  .field input,.field select,.field textarea{
+    width:100%;border:1px solid var(--line);border-radius:9px;
+    padding:10px 12px;font-size:14px;outline:none;font-family:inherit;
+    background:#fbfbfc;
+  }
+  .field textarea{resize:vertical;min-height:70px;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;border-bottom:none;padding:12px 0;}
+  .radio-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .radio-row label{
+    flex:1;min-width:28%;border:1px solid var(--line);border-radius:9px;padding:10px;
+    text-align:center;font-size:13px;color:var(--sub);cursor:pointer;
+    margin:0;
+  }
+  .radio-row input{display:none;}
+  .radio-row label:has(input:checked){border-color:var(--brand);background:var(--brand-light);}
+  .radio-row label:has(input:checked) span{color:var(--brand);font-weight:700;}
+  .radio-row.want label:has(input:checked){border-color:var(--want);background:var(--want-light);}
+  .radio-row.want label:has(input:checked) span{color:var(--want);}
+  .hint{padding:0 16px;font-size:11px;color:var(--sub);line-height:1.7;}
+
+  /* 详情 */
+  .detail-img{
+    height:190px;background:linear-gradient(135deg,#a9cdf0,#d6e6f7);
+    display:flex;align-items:center;justify-content:center;color:#3f6ea3;font-size:12px;
+  }
+  .detail-img.want{background:linear-gradient(135deg,#f4d3a8,#fbe8cf);color:#a3722f;}
+  .detail-img.goods{background:linear-gradient(135deg,#a8e0cf,#d3f0e6);color:#2f7a63;}
+  .detail-price{padding:14px 16px;border-bottom:8px solid var(--bg);}
+  .detail-price .p{color:var(--red);font-size:24px;font-weight:800;}
+  .detail-price .p.want{color:var(--want);}
+  .detail-price .p.goods{color:var(--goods);}
+  .detail-price .p small{font-size:12px;font-weight:400;color:var(--sub);}
+  .detail-price .t{font-size:16px;font-weight:700;margin-top:6px;}
+  .detail-price .s{font-size:12px;color:var(--sub);margin-top:5px;}
+  .detail-block{padding:14px 16px;border-bottom:8px solid var(--bg);background:#fff;}
+  .detail-block h3{font-size:14px;margin-bottom:11px;}
+  .kv{display:flex;flex-wrap:wrap;gap:11px;}
+  .kv div{width:calc(50% - 6px);font-size:12px;color:var(--sub);}
+  .kv div b{color:var(--text);display:block;font-size:13.5px;margin-top:3px;font-weight:600;}
+  .notice{
+    background:#fffbeb;border:1px solid #fde68a;color:#92400e;
+    font-size:11.5px;padding:11px 13px;border-radius:10px;line-height:1.7;
+    margin:0 16px 14px;
+  }
+  .detail-actions{display:flex;gap:10px;padding:14px 16px;}
+  .detail-actions .btn{flex:1;padding:13px;border-radius:12px;font-size:14px;}
+
+  /* 举报 */
+  .report-item{
+    display:flex;align-items:center;gap:10px;padding:14px 16px;
+    border-bottom:1px solid var(--line);font-size:14px;cursor:pointer;
+  }
+  .report-item input{width:17px;height:17px;accent-color:var(--brand);}
+
+  /* toast */
+  .toast{
+    position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+    background:rgba(17,24,39,.92);color:#fff;padding:12px 20px;
+    border-radius:10px;font-size:13.5px;z-index:99;display:none;
+    max-width:80%;text-align:center;line-height:1.6;
+  }
+  .toast.show{display:block;}
+
+  /* ============ 首次进入的协议弹窗 ============ */
+  .gate{
+    position:fixed;inset:0;background:rgba(15,23,42,.72);z-index:200;
+    display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  .gate.show{display:flex;}
+  .gate-box{
+    background:#fff;border-radius:18px;width:100%;max-width:420px;
+    max-height:88vh;display:flex;flex-direction:column;overflow:hidden;
+  }
+  .gate-head{
+    padding:20px 22px 14px;text-align:center;border-bottom:1px solid var(--line);
+  }
+  .gate-head .ic{font-size:32px;margin-bottom:8px;}
+  .gate-head h2{font-size:17px;margin-bottom:6px;}
+  .gate-head p{font-size:12px;color:var(--sub);line-height:1.6;}
+  .gate-body{
+    padding:16px 22px;overflow-y:auto;flex:1;
+  }
+  .gate-points{list-style:none;margin:0;}
+  .gate-points li{
+    display:flex;gap:9px;font-size:13px;line-height:1.65;color:#374151;
+    padding:9px 0;border-bottom:1px dashed var(--line);
+  }
+  .gate-points li:last-child{border-bottom:none;}
+  .gate-points .n{
+    width:18px;height:18px;border-radius:50%;background:#fef3c7;color:#92400e;
+    font-size:11px;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;margin-top:2px;font-weight:700;
+  }
+  .gate-agree{
+    display:flex;align-items:flex-start;gap:10px;padding:16px 22px 6px;
+    font-size:13px;line-height:1.6;cursor:pointer;
+  }
+  .gate-agree input{
+    width:19px;height:19px;accent-color:var(--brand);flex-shrink:0;margin-top:2px;
+    cursor:pointer;
+  }
+  .gate-agree a{color:var(--brand);text-decoration:underline;cursor:pointer;}
+  .gate-btn{
+    margin:10px 22px 20px;padding:14px;border-radius:12px;border:none;
+    background:#cbd5e1;color:#fff;font-size:15px;font-weight:700;
+    cursor:not-allowed;font-family:inherit;
+  }
+  .gate-btn.on{background:var(--brand);cursor:pointer;}
+  .gate-btn.on:active{transform:scale(.99);}
+
+  /* 协议全文展开 */
+  .fulltext{
+    display:none;padding:0 22px 16px;font-size:12px;color:#4b5563;
+    line-height:1.85;max-height:260px;overflow-y:auto;
+  }
+  .fulltext.show{display:block;}
+  .fulltext h3{font-size:13px;margin:14px 0 6px;color:var(--text);}
+  .fulltext h3:first-child{margin-top:0;}
+  .fulltext p{margin-bottom:8px;}
+
+</style>
+</head>
+<body>
+
+<!-- ==================== 顶部 ==================== -->
+<div class="topbar">
+  <h1>🏝️ 海花岛2号岛 · 社区信息板</h1>
+  <p>免费信息平台 · 租房 / 求租 / 二手 · 双方自行沟通 · 本平台不核验、不收费</p>
+  <!-- 房源/求租/二手 切换 -->
+  <div class="mode-switch">
+    <div id="modeHouse" class="on" onclick="setMode('house')">🏠 房源</div>
+    <div id="modeWant" onclick="setMode('want')">🙋 求租</div>
+    <div id="modeGoods" onclick="setMode('goods')">🛋️ 二手</div>
+  </div>
+</div>
+
+<!-- ==================== 搜索 + 筛选 ==================== -->
+<div class="searchwrap">
+  <input id="searchInput" type="text" placeholder="🔍 搜索组团 / 户型 / 关键词…">
+</div>
+<div class="filters" id="filters"></div>
+
+<!-- ==================== 列表 ==================== -->
+<div class="list" id="list"></div>
+
+<!-- ==================== 底部导航 ==================== -->
+<div class="tabbar">
+  <div class="active" id="tabList" onclick="switchTab('list')"><span class="ico">🏠</span>找房</div>
+  <div onclick="openPicker()"><span class="ico">➕</span>发布</div>
+  <div onclick="switchTab('mine')"><span class="ico">👤</span>我的</div>
+</div>
+
+<!-- ==================== 选择发布类型弹层 ==================== -->
+<div class="sheet" id="pickerSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <h2>你要发布什么？</h2>
+      <button class="close" onclick="closeSheet('pickerSheet')">×</button>
+    </div>
+    <div class="pick-type">
+      <div class="pt house" onclick="openPublish('house')">
+        <div class="i">🏠</div>
+        <div class="n">发布房源</div>
+        <div class="d">我是房东<br>有房要出租</div>
+      </div>
+      <div class="pt want" onclick="openPublish('want')">
+        <div class="i">🙋</div>
+        <div class="n">发布求租</div>
+        <div class="d">我是租客<br>在找房子</div>
+      </div>
+      <div class="pt goods" onclick="openPublish('goods')">
+        <div class="i">🛋️</div>
+        <div class="n">发布二手</div>
+        <div class="d">转让闲置<br>出售物品</div>
+      </div>
+    </div>
+    <div class="hint" style="padding-bottom:16px;">
+      ℹ️ 房源由房东发布，求租由租客发布，二手为物品转让，双方看到后自行联系。
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 发布房源弹层 ==================== -->
+<div class="sheet" id="publishSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <h2 id="publishTitle">发布房源</h2>
+      <button class="close" onclick="closeSheet('publishSheet')">×</button>
+    </div>
+
+    <!-- 房源专有字段 -->
+    <div id="houseFields">
+      <div class="field">
+        <label>所在组团</label>
+        <select id="fArea"></select>
+      </div>
+      <div class="field">
+        <label>楼栋号</label>
+        <input id="fBuilding" type="text" placeholder="如 56栋 / 228栋（建议填写，方便租客定位）">
+      </div>
+      <div class="field">
+        <label>户型</label>
+        <select id="fRoom">
+          <option>1室1厅</option>
+          <option selected>2室1厅</option>
+          <option>2室2厅</option>
+          <option>3室1厅</option>
+          <option>3室2厅</option>
+          <option>单间/开间</option>
+        </select>
+      </div>
+      <div class="field-row" style="padding:0 16px;border-bottom:1px solid var(--line);">
+        <div class="field">
+          <label>面积（㎡）</label>
+          <input id="fSize" type="number" placeholder="如 80">
+        </div>
+        <div class="field">
+          <label>月租（元）</label>
+          <input id="fPrice" type="number" placeholder="如 1000">
+        </div>
+      </div>
+      <div class="field">
+        <label>房屋类型</label>
+        <div class="radio-row">
+          <label><input type="radio" name="ftype" value="平层" checked><span>平层</span></label>
+          <label><input type="radio" name="ftype" value="LOFT/复式"><span>LOFT/复式</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>可租租期</label>
+        <div class="radio-row">
+          <label><input type="radio" name="fterm" value="半年" checked><span>过冬半年</span></label>
+          <label><input type="radio" name="fterm" value="年租"><span>年租</span></label>
+          <label><input type="radio" name="fterm" value="半年/年租均可"><span>均可</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 求租专有字段 -->
+    <div id="wantFields" style="display:none;">
+      <div class="field">
+        <label>想租的组团</label>
+        <select id="wArea"></select>
+      </div>
+      <div class="field">
+        <label>希望的楼栋号（选填）</label>
+        <input id="wBuilding" type="text" placeholder="如 希望是 56栋附近，不填也可以">
+      </div>
+      <div class="field">
+        <label>想租的户型</label>
+        <select id="wRoom">
+          <option>1室1厅</option>
+          <option selected>2室1厅</option>
+          <option>2室2厅</option>
+          <option>3室1厅</option>
+          <option>3室2厅</option>
+          <option>单间/开间</option>
+          <option>不限</option>
+        </select>
+      </div>
+      <div class="field-row" style="padding:0 16px;border-bottom:1px solid var(--line);">
+        <div class="field">
+          <label>预算月租（元）</label>
+          <input id="wPrice" type="number" placeholder="如 1000">
+        </div>
+        <div class="field">
+          <label>租期</label>
+          <select id="wTerm">
+            <option>过冬半年</option>
+            <option>年租</option>
+            <option>都可以</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>房屋类型要求</label>
+        <div class="radio-row want">
+          <label><input type="radio" name="wtype" value="要平层" checked><span>要平层</span></label>
+          <label><input type="radio" name="wtype" value="无所谓"><span>无所谓</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 二手物品专有字段 -->
+    <div id="goodsFields" style="display:none;">
+      <div class="field">
+        <label>物品名称</label>
+        <input id="gTitle" type="text" placeholder="如 电动车 / 电饭煲 / 折叠床">
+      </div>
+      <div class="field-row" style="padding:0 16px;border-bottom:1px solid var(--line);">
+        <div class="field">
+          <label>价格（元）</label>
+          <input id="gPrice" type="number" placeholder="如 800">
+        </div>
+        <div class="field">
+          <label>新旧程度</label>
+          <select id="gCond">
+            <option>全新</option>
+            <option selected>9成新</option>
+            <option>7-8成新</option>
+            <option>5-6成新</option>
+            <option>能用就行</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>所在组团</label>
+        <select id="gArea"></select>
+      </div>
+      <div class="field">
+        <label>楼栋号（选填）</label>
+        <input id="gBuilding" type="text" placeholder="如 56栋，方便对方来找你">
+      </div>
+    </div>
+
+    <!-- 公共字段 -->
+    <div class="field">
+      <label>联系电话</label>
+      <input id="fPhone" type="tel" placeholder="方便对方直接联系你">
+    </div>
+    <div class="field">
+      <label id="descLabel">补充说明</label>
+      <textarea id="fDesc" placeholder="还有什么想说的？比如朝向、家电、什么时候能入住…"></textarea>
+    </div>
+    <div style="padding:16px;">
+      <button class="btn block" id="submitBtn" onclick="submitPost()">确认发布</button>
+    </div>
+    <div class="hint" style="padding-bottom:8px;">
+      ℹ️ 本平台不审核信息真实性，发布即展示。发布者请确保信息真实；用户请自行核实对方身份。
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 详情弹层 ==================== -->
+<div class="sheet" id="detailSheet">
+  <div class="sheet-inner" id="detailInner"></div>
+</div>
+
+<!-- ==================== 举报弹层 ==================== -->
+<div class="sheet" id="reportSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <h2>举报该信息</h2>
+      <button class="close" onclick="closeSheet('reportSheet')">×</button>
+    </div>
+    <div id="reportList"></div>
+    <div style="padding:16px;">
+      <button class="btn block danger" onclick="submitReport()">提交举报</button>
+    </div>
+    <div class="hint" style="padding-bottom:8px;">
+      ⚠️ 同一信息被 3 个不同用户举报后自动下架；确认是中介冒充房东的，将拉黑发布者。
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 首次进入 · 风险告知与协议确认 ==================== -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-head">
+      <div class="ic">🏝️</div>
+      <h2>使用前请先阅读</h2>
+      <p>海花岛2号岛租房信息板<br>这是一个免费信息平台，请知晓以下事项</p>
+    </div>
+    <div class="gate-body">
+      <ul class="gate-points">
+        <li><span class="n">1</span><span>本平台是<b>免费信息展示平台</b>，<b>不是房屋中介</b>，不收取任何费用。</span></li>
+        <li><span class="n">2</span><span>本平台<b>不核验房源信息真实性</b>，<b>不保证发布者一定是房东本人</b>，请务必自行核实。</span></li>
+        <li><span class="n">3</span><span>本平台<b>不参与交易、不代收押金</b>。请勿向任何人转账汇款，谨防诈骗。</span></li>
+        <li><span class="n">4</span><span>看房请结伴同行，签约前<b>核对房产证原件</b>，明确物业费、水电计费标准。</span></li>
+        <li><span class="n">5</span><span>二手交易请<b>当面验货、当面付款</b>，切勿先付款后发货，谨防诈骗。</span></li>
+        <li><span class="n">6</span><span>您与对方的交易、产生的任何纠纷，<b>由您与对方自行负责</b>。</span></li>
+      </ul>
+
+      <div style="text-align:center;margin:14px 0 4px;">
+        <a onclick="toggleFullText()" style="font-size:12.5px;color:var(--brand);text-decoration:underline;cursor:pointer;">
+          <span id="fullTextToggle">📄 点击查看《用户协议》全文</span>
+        </a>
+      </div>
+
+      <div class="fulltext" id="fulltext">
+        <h3>一、平台性质</h3>
+        <p>本平台是由个人运营者提供的免费、非营利的租房信息展示平台，仅面向海南儋州海花岛2号岛。本平台不是房屋中介机构，不提供居间、代理等中介服务，不收取佣金或服务费。</p>
+
+        <h3>二、不提供核验（核心条款）</h3>
+        <p>本平台不对任何房源信息的真实性、准确性进行审核或核验，也无法保证发布者确实是房屋产权人或其合法授权人。房源信息由用户自行发布、发布即展示。</p>
+        <p>平台不对以下事项作任何保证：发布者是否为真实房东；房源是否真实存在、是否可用；房源描述、图片、价格等是否准确；发布者的身份与履约能力。</p>
+
+        <h3>三、用户发布规则</h3>
+        <p>发布者应确保其为房屋产权人本人或已取得合法授权，保证信息真实。不得发布虚假房源、不得以"预付定金""看房费"等名义骗取财物。发布者对其发布内容独立承担全部法律责任。</p>
+
+        <h3>四、安全提示</h3>
+        <p>线下看房建议结伴同行；签约前务必核对房屋产权证原件及产权人身份证件；切勿向陌生人转账、汇款或支付定金、押金；明确物业费、水电燃气费的承担方及计费标准；签订书面租赁合同。</p>
+
+        <h3>五、举报与拉黑</h3>
+        <p>用户可对存在问题的信息进行举报。同一信息被不同用户累计举报达到一定次数时，平台将标记或下架。经核实确认违规的发布者，平台有权下架其信息并限制其继续发布。平台的拉黑处理为自主管理行为，不构成对任何个人或事实的法律认定。</p>
+
+        <h3>六、免责声明</h3>
+        <p>本平台仅提供信息展示场所，不对用户之间因租房产生的任何纠纷承担责任，包括房源虚假、押金纠纷、合同违约、人身财产损害等。因不可抗力、系统维护等导致的服务中断或损失，平台不承担责任。本平台为免费服务，运营者不以本平台盈利。</p>
+
+        <h3>七、个人信息</h3>
+        <p>本平台为纯前端网页，数据存储于用户自身的浏览器本地，运营者不收集、不存储用户的个人信息。用户发布的联系电话为自愿公开。</p>
+
+        <h3>八、其他</h3>
+        <p>运营者有权修改本协议并公示，用户继续使用即视为接受。本协议适用中华人民共和国法律。</p>
+      </div>
+    </div>
+
+    <label class="gate-agree">
+      <input type="checkbox" id="gateCheck" onchange="onGateCheck()">
+      <span>我已阅读并理解上述内容，知晓本平台<b>不核验、不担保、不参与交易</b>，并同意自行承担交易风险。</span>
+    </label>
+    <button class="gate-btn" id="gateBtn" onclick="enterSite()">同意并进入</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   海花岛2号岛 · 租房信息板
+   数据均存浏览器本地（localStorage）
+   ========================================================= */
+
+/* ---------- 配置：8个组团 ---------- */
+const AREAS = [
+  "白沙湾",   // 1-139栋
+  "晓港湾",   // 140-219栋（也叫小港湾）
+  "松涛湾",   // 220-253、299-304栋
+  "爱琴湾",   // 254-282栋（也叫爱情湾）
+  "白鹭湾",   // 283-298栋
+  "玲珑湾",   // 305-310、313-319栋
+  "听海湾",   // 320-349栋
+  "澜湾"      // 澜湾1-6栋
+];
+
+/* ---------- 配置：举报理由（房源/求租略有不同） ---------- */
+const REPORT_REASONS_HOUSE = [
+  "疑似中介冒充房东",
+  "疑似假房源 / 图片不实",
+  "要求预付定金或租金",
+  "电话打不通 / 已租出"
+];
+const REPORT_REASONS_WANT = [
+  "疑似中介冒充租客",
+  "疑似虚假信息 / 恶意骚扰",
+  "内容与求租无关（广告）",
+  "联系方式无效"
+];
+const REPORT_REASONS_GOODS = [
+  "疑似虚假商品 / 货不对板",
+  "要求预付定金后消失",
+  "疑似商家冒充个人",
+  "价格或描述不实"
+];
+
+const REPORT_THRESHOLD = 3;
+
+/* =========================================================
+   数据读写
+   ========================================================= */
+const KEY_POSTS = "hhd_posts";
+const KEY_BLOCKED = "hhd_blocked";
+
+function loadPosts(){
+  const raw = localStorage.getItem(KEY_POSTS);
+  if(!raw){
+    // 兼容旧数据
+    const old = localStorage.getItem("hhd_houses");
+    if(old){
+      const arr = JSON.parse(old).map(x => ({...x, kind:"house"}));
+      localStorage.setItem(KEY_POSTS, JSON.stringify(arr));
+      return arr;
+    }
+    return [];
+  }
+  return JSON.parse(raw);
+}
+function savePosts(arr){ localStorage.setItem(KEY_POSTS, JSON.stringify(arr)); }
+function loadBlocked(){
+  const raw = localStorage.getItem(KEY_BLOCKED);
+  return raw ? JSON.parse(raw) : [];
+}
+function isBlocked(phone){ return loadBlocked().includes(phone); }
+
+/* =========================================================
+   示例数据
+   ========================================================= */
+function initDemoData(){
+  if(localStorage.getItem(KEY_POSTS)) return;
+  const now = Date.now();
+  const demo = [
+    {
+      id: now + 1, kind:"house",
+      area:"白沙湾", building:"56栋", room:"2室1厅",
+      size:"80", price:"1000", type:"平层", term:"半年/年租均可",
+      phone:"13800001111",
+      desc:"南向、低层、带电梯，家电齐全，含物业费，水电民用价。适合过冬长住。",
+      time: now - 3600000*5, reports: [], reported:false
+    },
+    {
+      id: now + 2, kind:"house",
+      area:"松涛湾", building:"228栋", room:"2室1厅",
+      size:"75", price:"950", type:"平层", term:"年租",
+      phone:"13900002222",
+      desc:"东南向高层，客厅带阳台，采光好，近超市，拎包入住。",
+      time: now - 3600000*20, reports: [], reported:false
+    },
+    {
+      id: now + 3, kind:"want",
+      area:"白沙湾", building:"56栋附近", room:"2室1厅",
+      size:"", price:"1000", type:"要平层", term:"过冬半年",
+      phone:"13700003333",
+      desc:"老两口过冬，想找南向、带电梯的两室一厅，希望11月入住，租到明年4月。",
+      time: now - 3600000*8, reports: [], reported:false
+    },
+    {
+      id: now + 4, kind:"goods",
+      area:"白沙湾", building:"56栋",
+      title:"九成新电动车", price:"800", cond:"9成新",
+      phone:"13600004444",
+      desc:"过冬买的代步电动车，骑了两个月，车况好，带充电器。走的时候便宜转。",
+      time: now - 3600000*3, reports: [], reported:false
+    },
+    {
+      id: now + 5, kind:"goods",
+      area:"晓港湾", building:"168栋",
+      title:"全新电饭煲 + 炒锅", price:"120", cond:"全新",
+      phone:"13500005555",
+      desc:"买重复了，全新未拆封，电饭煲3L，炒锅28cm。打包一起出。",
+      time: now - 3600000*11, reports: [], reported:false
+    }
+  ];
+  savePosts(demo);
+}
+
+/* =========================================================
+   状态
+   ========================================================= */
+let currentArea = "全部";
+let currentMode = "house";   // house | want | goods
+let publishKind = "house";   // 当前发布的类型
+
+/* =========================================================
+   模式切换
+   ========================================================= */
+function setMode(m){
+  currentMode = m;
+  document.getElementById("modeHouse").classList.toggle("on", m==="house");
+  document.getElementById("modeWant").classList.toggle("on", m==="want");
+  document.getElementById("modeGoods").classList.toggle("on", m==="goods");
+  document.getElementById("modeWant").classList.toggle("want", m==="want");
+  document.getElementById("modeGoods").classList.toggle("goods", m==="goods");
+  const ph = { house:"🔍 搜索组团 / 户型 / 关键词…",
+               want:"🔍 搜索想租的组团 / 户型…",
+               goods:"🔍 搜索物品名称 / 关键词…" };
+  document.getElementById("searchInput").placeholder = ph[m] || ph.house;
+  renderFilters();
+  renderList();
+}
+function switchTab(tab){
+  if(tab === "mine"){ toast("「我的」页：以后可以放 我的发布 / 我的举报"); }
+}
+
+/* =========================================================
+   渲染筛选
+   ========================================================= */
+function renderFilters(){
+  const box = document.getElementById("filters");
+  const all = ["全部", ...AREAS];
+  const cls = currentMode === "want" ? "want" : (currentMode === "goods" ? "goods" : "");
+  box.innerHTML = all.map(a =>
+    `<div class="chip ${a===currentArea?'on':''} ${cls}"
+          onclick="setArea('${a}')">${a}</div>`
+  ).join("");
+}
+function setArea(a){ currentArea = a; renderFilters(); renderList(); }
+
+/* =========================================================
+   渲染列表
+   ========================================================= */
+function renderList(){
+  const box = document.getElementById("list");
+  let posts = loadPosts().filter(p => p.kind === currentMode);
+  const kw = document.getElementById("searchInput").value.trim();
+
+  if(currentArea !== "全部"){
+    posts = posts.filter(p => p.area === currentArea);
+  }
+  if(kw){
+    posts = posts.filter(p =>
+      ((p.area||"")+(p.room||"")+(p.desc||"")+(p.type||"")+(p.building||"")+(p.title||"")+(p.cond||"")).includes(kw)
+    );
+  }
+  posts = posts.filter(p => !p.removed);
+  posts.sort((a,b) => b.time - a.time);
+
+  if(posts.length === 0){
+    const map = {
+      house:['🏝️','这个区域还没有房源'],
+      want: ['🙋','还没有人发求租信息'],
+      goods:['🛋️','这个区域还没有二手物品']
+    };
+    const [icon, txt] = map[currentMode] || map.house;
+    box.innerHTML = `<div class="empty">
+      <div class="big">${icon}</div>${txt}<br>点底部「➕ 发布」发一条
+    </div>`;
+    return;
+  }
+
+  box.innerHTML = posts.map(h => {
+    const isWant  = h.kind === "want";
+    const isGoods = h.kind === "goods";
+    const w = isWant ? " want" : (isGoods ? " goods" : "");
+    const cls = w.trim();
+    const kindLabel = isWant ? "求租" : (isGoods ? "二手" : h.type);
+    const imgText = isWant ? "求租者信息" : (isGoods ? "物品图片" : "房源图片");
+
+    // 标题
+    let title;
+    if(isWant)       title = `求租 · ${h.room}${h.price?'（预算'+h.price+'元/月）':''}`;
+    else if(isGoods) title = h.title || "二手物品";
+    else             title = `海花岛2号岛 · ${h.room} ${h.size?h.size+'m²':''}`;
+
+    // 副标题
+    let sub;
+    if(isWant)       sub = `想租：${h.area}组团${h.building?' · '+h.building:''} · ${h.term}`;
+    else if(isGoods) sub = `${h.area}组团${h.building?' · '+h.building:''}${h.cond?' · '+h.cond:''}`;
+    else             sub = `${h.area}组团${h.building?' · '+h.building:''} · ${h.term}`;
+
+    // 标签
+    let tags = `<span class="tag area${w}">${h.area}</span>`;
+    if(h.building) tags += `<span class="tag">${h.building}</span>`;
+    if(isGoods){
+      if(h.cond) tags += `<span class="tag">${h.cond}</span>`;
+    }else{
+      tags += `<span class="tag">${h.room}</span>`;
+      if(h.size) tags += `<span class="tag">${h.size}m²</span>`;
+      tags += `<span class="tag">${h.term}</span>`;
+    }
+
+    // 价格 + 按钮
+    const priceUnit = isWant ? '元/月预算' : (isGoods ? '元' : '元/月');
+    const btnText   = isWant ? '联系TA' : (isGoods ? '联系TA' : '联系房东');
+
+    return `
+    <div class="card${w} ${h.reported?'reported':''}">
+      ${h.reported?'<div class="report-flag">⚠️ 该信息被多人举报，请谨慎联系</div>':''}
+      <div class="card-img${w}" style="${h.reported?'margin-top:26px;':''}">
+        <span class="tag-loft">${kindLabel}</span>
+        <button class="report-btn" onclick="event.stopPropagation();openReport(${h.id})">举报</button>
+        ${imgText}
+      </div>
+      <div class="card-body">
+        <div class="card-title">${title}</div>
+        <div class="card-sub">${sub}</div>
+        <div class="tags">${tags}</div>
+        <div class="card-foot">
+          <div class="price${w}">${h.price||'面议'}<small> ${priceUnit}</small></div>
+          <button class="btn${w}" onclick="openDetail(${h.id})">${btnText}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* =========================================================
+   详情
+   ========================================================= */
+function openDetail(id){
+  const h = loadPosts().find(x => x.id === id);
+  if(!h) return;
+  const isWant  = h.kind === "want";
+  const isGoods = h.kind === "goods";
+  const cls = isWant ? "want" : (isGoods ? "goods" : "");
+  const w = cls ? " " + cls : "";
+
+  let rows, title, imgText, priceUnit, btnText, priceMain, priceSmall, subLine;
+  if(isWant){
+    rows = `
+      <div>想租组团<b>${h.area}</b></div>
+      <div>希望楼栋<b>${h.building || '不限'}</b></div>
+      <div>想租户型<b>${h.room}</b></div>
+      <div>预算月租<b>${h.price?h.price+' 元':'面议'}</b></div>
+      <div>租期<b>${h.term}</b></div>
+      <div>房屋要求<b>${h.type||'—'}</b></div>`;
+    title = "求租详情"; imgText = "求租者信息"; priceUnit = "元/月预算";
+    btnText = "联系TA"; priceMain = h.price||'面议'; priceSmall = "元/月预算";
+    subLine = "想租：" + h.area + "组团" + (h.building?" · "+h.building:"");
+  }else if(isGoods){
+    rows = `
+      <div>物品名称<b>${h.title||'—'}</b></div>
+      <div>价格<b>${h.price?h.price+' 元':'面议'}</b></div>
+      <div>新旧程度<b>${h.cond||'—'}</b></div>
+      <div>所在组团<b>${h.area}</b></div>
+      <div>楼栋号<b>${h.building||'—'}</b></div>
+      <div>交易方式<b>线下自提</b></div>`;
+    title = "二手详情"; imgText = "物品图片"; priceUnit = "元";
+    btnText = "联系TA"; priceMain = h.price||'面议'; priceSmall = "元";
+    subLine = "海花岛2号岛 · " + h.area + "组团" + (h.building?" · "+h.building:"");
+  }else{
+    rows = `
+      <div>所属组团<b>${h.area}</b></div>
+      <div>楼栋号<b>${h.building || '—'}</b></div>
+      <div>户型<b>${h.room}</b></div>
+      <div>面积<b>${h.size?h.size+' m²':'—'}</b></div>
+      <div>房屋类型<b>${h.type}</b></div>
+      <div>可租租期<b>${h.term}</b></div>`;
+    title = "房源详情"; imgText = "房源图片"; priceUnit = "元/月";
+    btnText = "联系房东"; priceMain = h.price||'面议'; priceSmall = "元/月";
+    subLine = "海花岛2号岛 · " + h.area + "组团" + (h.building?" · "+h.building:"");
+  }
+
+  const mainT = isGoods
+    ? (h.title||'二手物品') + (h.cond ? ' · ' + h.cond : '')
+    : (isWant ? '求租 · ' : '') + h.room + ((!isWant&&h.size)?' · '+h.size+'m²':'') + ' · ' + h.type;
+
+  document.getElementById("detailInner").innerHTML = `
+    <div class="sheet-head">
+      <h2>${title}</h2>
+      <button class="close" onclick="closeSheet('detailSheet')">×</button>
+    </div>
+    <div class="detail-img${w}">${imgText}</div>
+    <div class="detail-price">
+      <div class="p${w}">${priceMain} <small>${priceSmall}</small></div>
+      <div class="t">${mainT}</div>
+      <div class="s">${subLine}</div>
+    </div>
+    <div class="detail-block">
+      <h3>${isWant?'求租要求':(isGoods?'物品信息':'房源信息')}</h3>
+      <div class="kv">${rows}</div>
+    </div>
+    <div class="detail-block">
+      <h3>补充说明</h3>
+      <div style="font-size:13.5px;line-height:1.8;color:#374151;">${h.desc || '暂未填写说明'}</div>
+    </div>
+    <div class="notice">
+      ⚠️ 本平台<b>不核验身份、不参与交易、不代收押金</b>。${
+        isGoods ? '二手交易请<b>当面验货、当面付款</b>，切勿先付款后发货，谨防诈骗。'
+                : '请务必线下看房、核对房产证原件后再签约，谨防诈骗。'}
+    </div>
+    <div class="detail-actions">
+      <button class="btn ghost" onclick="openReport(${h.id})">举报</button>
+      <a class="btn${w}" style="text-decoration:none;text-align:center;" href="tel:${h.phone}">
+        📞 ${btnText} ${maskPhone(h.phone)}
+      </a>
+    </div>
+  `;
+  document.getElementById("detailSheet").classList.add("show");
+}
+
+function maskPhone(p){
+  if(!p || p.length < 7) return p || '';
+  return p.slice(0,3) + '****' + p.slice(-4);
+}
+
+/* =========================================================
+   发布
+   ========================================================= */
+function openPicker(){
+  document.getElementById("pickerSheet").classList.add("show");
+}
+
+function openPublish(kind){
+  publishKind = kind;
+  closeSheet("pickerSheet");
+
+  const isWant  = kind === "want";
+  const isGoods = kind === "goods";
+  const titleMap = { house:"发布房源", want:"发布求租", goods:"发布二手物品" };
+  document.getElementById("publishTitle").textContent = titleMap[kind] || "发布";
+  document.getElementById("houseFields").style.display = (kind==="house") ? "block" : "none";
+  document.getElementById("wantFields").style.display  = isWant ? "block" : "none";
+  document.getElementById("goodsFields").style.display = isGoods ? "block" : "none";
+  document.getElementById("submitBtn").className =
+    "btn block" + (isWant ? " want" : (isGoods ? " goods" : ""));
+
+  // 填充组团下拉
+  const opt = AREAS.map(a => `<option>${a}</option>`).join("");
+  document.getElementById("fArea").innerHTML = opt;
+  document.getElementById("wArea").innerHTML = opt;
+  document.getElementById("gArea").innerHTML = opt;
+
+  // 补充说明的提示语：跟着类型变
+  const descCfg = {
+    house: {
+      label: "补充说明",
+      ph: "还有什么想说的？比如朝向、楼层、家电、物业费、什么时候能入住…"
+    },
+    want: {
+      label: "补充说明",
+      ph: "比如入住时间、几个人住、对楼层朝向的要求、养不养宠物…"
+    },
+    goods: {
+      label: "物品说明",
+      ph: "比如用了多久、有无瑕疵、配件是否齐全、在哪里面交、能不能小刀…"
+    }
+  };
+  const cfg = descCfg[kind] || descCfg.house;
+  document.getElementById("descLabel").textContent = cfg.label;
+  document.getElementById("fDesc").placeholder = cfg.ph;
+
+  document.getElementById("publishSheet").classList.add("show");
+}
+
+function submitPost(){
+  const phone = document.getElementById("fPhone").value.trim();
+  const desc  = document.getElementById("fDesc").value.trim();
+  if(!phone || phone.length < 7){ toast("请填写有效的联系电话"); return; }
+  if(isBlocked(phone)){ toast("该手机号已被拉黑，无法发布"); return; }
+
+  const posts = loadPosts();
+
+  if(publishKind === "house"){
+    const price = document.getElementById("fPrice").value.trim();
+    if(!price){ toast("请填写月租"); return; }
+    posts.push({
+      id: Date.now(), kind:"house",
+      area: document.getElementById("fArea").value,
+      building: document.getElementById("fBuilding").value.trim(),
+      room: document.getElementById("fRoom").value,
+      size: document.getElementById("fSize").value.trim(),
+      price: price,
+      type: document.querySelector('input[name="ftype"]:checked').value,
+      term: document.querySelector('input[name="fterm"]:checked').value,
+      phone, desc,
+      time: Date.now(), reports: [], reported:false
+    });
+    ["fBuilding","fSize","fPrice","fPhone","fDesc"].forEach(id =>
+      document.getElementById(id).value = "");
+  }else if(publishKind === "want"){
+    posts.push({
+      id: Date.now(), kind:"want",
+      area: document.getElementById("wArea").value,
+      building: document.getElementById("wBuilding").value.trim(),
+      room: document.getElementById("wRoom").value,
+      size: "",
+      price: document.getElementById("wPrice").value.trim(),
+      type: document.querySelector('input[name="wtype"]:checked').value,
+      term: document.getElementById("wTerm").value,
+      phone, desc,
+      time: Date.now(), reports: [], reported:false
+    });
+    ["wBuilding","wPrice","fPhone","fDesc"].forEach(id =>
+      document.getElementById(id).value = "");
+  }else{
+    // 二手
+    const title = document.getElementById("gTitle").value.trim();
+    const price = document.getElementById("gPrice").value.trim();
+    if(!title){ toast("请填写物品名称"); return; }
+    if(!price){ toast("请填写价格"); return; }
+    posts.push({
+      id: Date.now(), kind:"goods",
+      title: title,
+      area: document.getElementById("gArea").value,
+      building: document.getElementById("gBuilding").value.trim(),
+      cond: document.getElementById("gCond").value,
+      price: price,
+      phone, desc,
+      time: Date.now(), reports: [], reported:false
+    });
+    ["gTitle","gPrice","gBuilding","fPhone","fDesc"].forEach(id =>
+      document.getElementById(id).value = "");
+  }
+
+  savePosts(posts);
+  // 发布后自动切到对应列表
+  setMode(publishKind);
+  closeSheet("publishSheet");
+  renderList();
+  const msgMap = { house:"房源已发布！", want:"求租信息已发布！", goods:"二手物品已发布！" };
+  toast(msgMap[publishKind] || "发布成功！");
+}
+
+/* =========================================================
+   举报
+   ========================================================= */
+let reportTargetId = null;
+
+function openReport(id){
+  reportTargetId = id;
+  const post = loadPosts().find(x => x.id === id);
+  let reasons = REPORT_REASONS_HOUSE;
+  if(post && post.kind === "want")  reasons = REPORT_REASONS_WANT;
+  if(post && post.kind === "goods") reasons = REPORT_REASONS_GOODS;
+  document.getElementById("reportList").innerHTML = reasons.map((r,i) => `
+    <label class="report-item">
+      <input type="radio" name="reason" value="${r}" ${i===0?'checked':''}>
+      ${r}
+    </label>
+  `).join("");
+  document.getElementById("reportSheet").classList.add("show");
+}
+
+function submitReport(){
+  if(!reportTargetId){ return; }
+  const posts = loadPosts();
+  const p = posts.find(x => x.id === reportTargetId);
+  if(!p){ closeSheet("reportSheet"); return; }
+
+  let uid = localStorage.getItem("hhd_uid");
+  if(!uid){ uid = "u" + Math.random().toString(36).slice(2,9); localStorage.setItem("hhd_uid", uid); }
+
+  if(p.reports.includes(uid)){ toast("你已经举报过这条了"); closeSheet("reportSheet"); return; }
+  p.reports.push(uid);
+
+  if(p.reports.length >= REPORT_THRESHOLD){
+    p.reported = true;
+    const blocked = loadBlocked();
+    if(!blocked.includes(p.phone)){ blocked.push(p.phone); localStorage.setItem(KEY_BLOCKED, JSON.stringify(blocked)); }
+    savePosts(posts);
+    closeSheet("reportSheet");
+    renderList();
+    toast("感谢举报！该信息已标记，发布者手机号已拉黑");
+  }else{
+    savePosts(posts);
+    closeSheet("reportSheet");
+    renderList();
+    toast(`举报已收到（${p.reports.length}/${REPORT_THRESHOLD}）`);
+  }
+}
+
+/* =========================================================
+   通用
+   ========================================================= */
+function closeSheet(id){ document.getElementById(id).classList.remove("show"); }
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+document.getElementById("searchInput").addEventListener("input", renderList);
+document.querySelectorAll(".sheet").forEach(s => {
+  s.addEventListener("click", e => { if(e.target === s) s.classList.remove("show"); });
+});
+
+/* =========================================================
+   首次进入 · 风险告知与协议确认
+   ========================================================= */
+const KEY_AGREED = "hhd_agreed";
+
+function initGate(){
+  // 已同意过 → 不再弹
+  if(localStorage.getItem(KEY_AGREED) === "1") return;
+  document.getElementById("gate").classList.add("show");
+}
+function toggleFullText(){
+  const t = document.getElementById("fulltext");
+  const label = document.getElementById("fullTextToggle");
+  t.classList.toggle("show");
+  label.textContent = t.classList.contains("show")
+    ? "📄 收起《用户协议》全文"
+    : "📄 点击查看《用户协议》全文";
+}
+function onGateCheck(){
+  const checked = document.getElementById("gateCheck").checked;
+  const btn = document.getElementById("gateBtn");
+  btn.classList.toggle("on", checked);
+  btn.disabled = !checked;
+}
+function enterSite(){
+  if(!document.getElementById("gateCheck").checked){
+    toast("请先勾选同意后再进入");
+    return;
+  }
+  localStorage.setItem(KEY_AGREED, "1");
+  document.getElementById("gate").classList.remove("show");
+  toast("欢迎使用，祝你找到合适的房子");
+}
+
+/* =========================================================
+   启动
+   ========================================================= */
+initDemoData();
+renderFilters();
+renderList();
+initGate();
+</script>
+</body>
+</html>
